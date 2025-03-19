@@ -44,8 +44,8 @@ class CommunicationStep:
 class Graph:
     def __init__(self) -> None:
         self.nodes: dict[str, Node] = {}
-        self.edges: dict[tuple[str, str], list] = defaultdict(list)
-        # self.adjacency_list = defaultdict(list)
+        self.edges: dict[tuple[str, str], list[CommunicationStep]] = defaultdict(list)
+        self.adjacency_list: dict[str, list[CommunicationStep]] = defaultdict(list)
 
 @dataclass
 class PathStep:
