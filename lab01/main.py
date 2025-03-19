@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import heapq
 from itertools import count
 import time as t
+import sys
 
 def time_to_seconds(t: time) -> int:
     return t.hour * 3600 + t.minute * 60 + t.second
@@ -90,9 +91,9 @@ for index, row in df.iterrows():
     if key not in graph.edges:
         graph.edges[key] = []
     graph.edges[key].append(step)
-    
-'''
-. Wykorzystując udostępniony plik connection_graph.csv zaimplementuj
+
+r'''
+Wykorzystując udostępniony plik connection_graph.csv zaimplementuj
 algorytm wyszukiwania najkrótszych połączeń pomiędzy zadanymi przystankami A i B. Jako miarę odległości przyjmij, zależnie od decyzji użytkownika, czas dojazdu z A do B lub liczbę przesiadek koniecznych do wykonania.
 Program powinien przyjmować na wejściu wyłącznie 4 zmienne:
 (a) przystanek początkowy A
@@ -192,7 +193,6 @@ def dijkstra(start: str, end: str, start_time_str: str) -> Path:
             path_steps.append(PathStep(start, "", step.line, str(step.departure_time), ""))
             
             for i, step in enumerate(path_taken[:-1]):
-                print(step)
                 if step.line == last_line:
                     continue
                 last_line = step.line    
@@ -203,6 +203,7 @@ def dijkstra(start: str, end: str, start_time_str: str) -> Path:
                 path_steps.append(PathStep(step.start_stop.name, "", last_line, str(step.departure_time), ""))   
                             
                 
+            step = path_taken[-1]
             path_steps[-1].end_time = str(step.arrival_time)
             path_steps[-1].end_node_name = step.end_stop.name
             
@@ -219,7 +220,7 @@ def dijkstra(start: str, end: str, start_time_str: str) -> Path:
                 arr_sec: int = time_to_seconds(step.arrival_time)
                 
                 if dep_sec >= entry.current_time_sec:
-                    travel_time = arr_sec - entry.current_time_sec
+                    travel_time: int = arr_sec - entry.current_time_sec
                     if travel_time < 0:
                         travel_time += 86400  # handle crossing midnight
                     
@@ -235,9 +236,6 @@ def dijkstra(start: str, end: str, start_time_str: str) -> Path:
 
     raise NoPathFoundError(f"No path found from {start} to {end}")
 
-def prints():
-    print(f"Line {step.line} | {step.start_stop.name} {step.departure_time} -> {step.end_stop.name} {step.arrival_time}")
-    print(f"Total time: {entry.priority // 60} minutes {entry.priority % 60} seconds")
 
 def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     path: Path = dijkstra(a, b, start_time)
@@ -245,13 +243,12 @@ def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     print("Schedule:")
     for step in path.steps:
         print(f"Line {step.line} | {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
-    print(f"Total time: {path.cost // 60} minutes {path.cost % 60} seconds")
+    print(f"Total time: {path.cost // 60} minutes and {path.cost % 60} seconds", file=sys.stderr)
+    print(f"Execution time: {path.calculation_time:.4f} seconds", file=sys.stderr)
     
 a = "Zajezdnia Obornicka"
 b = "Psie Pole"
 optimization_criterium = "t"
 start_time = "15:20:00"
     
-print(datetime.now())
 algorithm_a_to_b(a, b, optimization_criterium, start_time)
-print(datetime.now())
