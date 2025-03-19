@@ -8,6 +8,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 import heapq
 from itertools import count
+import time as t
 
 def time_to_seconds(t: time) -> int:
     return t.hour * 3600 + t.minute * 60 + t.second
@@ -60,6 +61,9 @@ class CommunicationStep:
         new_communication_step = CommunicationStep(company, line, departure_time, arrival_time, start_stop, end_stop)
         
         return new_communication_step
+    
+    def __str__(self):
+        return f"line {self.line} | {self.start_stop} {self.departure_time} -> {self.end_stop} {self.arrival_time}"
     
     
 df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str}, skipfooter=950000, engine="python")
@@ -128,6 +132,19 @@ d(v) = d(u) + w(u, v) oraz p(v) = u
 4. Zwróć d oraz p
 '''
 
+@dataclass
+class PathStep:
+    start_node_name: str
+    end_node_name: str
+    line: str
+    start_time: str
+    end_time: str
+
+@dataclass
+class Path:
+    steps: list[PathStep]
+    cost: float
+    calculation_time: float    
 
 @dataclass(order=True)
 class QueueEntry:
@@ -136,8 +153,12 @@ class QueueEntry:
     current_stop_name: str = field(compare=False)
     path_taken: list[CommunicationStep] = field(compare=False)
     current_time_sec: int = field(compare=False)
+    
+class NoPathFoundError(Exception):
+    """Raised when no path is found between the start and end nodes."""
+    pass
 
-def dijkstra(start: str, end: str, start_time_str: str) -> None:
+def dijkstra(start: str, end: str, start_time_str: str) -> Path:
     start_node: Node = graph.nodes[start]
     end_node: Node = graph.nodes[end]
     
@@ -149,6 +170,8 @@ def dijkstra(start: str, end: str, start_time_str: str) -> None:
     heapq.heappush(queue, QueueEntry(0, next(counter), start_node.name, [], start_time_sec))
     
     visited: set[str] = set()
+    
+    start_time_perf: float = t.perf_counter()
 
     while queue:
         entry: QueueEntry = heapq.heappop(queue)
@@ -158,18 +181,42 @@ def dijkstra(start: str, end: str, start_time_str: str) -> None:
         visited.add(entry.current_stop_name)
         
         if entry.current_stop_name == end_node.name:
-            print("Schedule:")
-            for step in entry.path_taken:
-                print(f"Line {step.line} | {step.start_stop.name} {step.departure_time} -> {step.end_stop.name} {step.arrival_time}")
-            print(f"Total time: {entry.priority // 60} minutes {entry.priority % 60} seconds")
-            return
+            elapsed: float = t.perf_counter() - start_time_perf
+            
+            path_steps: list[PathStep] = []
+            
+            path_taken: list[CommunicationStep] = entry.path_taken
+            
+            step: CommunicationStep = path_taken[0]
+            last_line: str = step.line            
+            path_steps.append(PathStep(start, "", step.line, str(step.departure_time), ""))
+            
+            for i, step in enumerate(path_taken[:-1]):
+                print(step)
+                if step.line == last_line:
+                    continue
+                last_line = step.line    
+                
+                path_steps[-1].end_time = str(path_taken[i - 1].arrival_time)
+                path_steps[-1].end_node_name = step.start_stop.name
+                
+                path_steps.append(PathStep(step.start_stop.name, "", last_line, str(step.departure_time), ""))   
+                            
+                
+            path_steps[-1].end_time = str(step.arrival_time)
+            path_steps[-1].end_node_name = step.end_stop.name
+            
+            cost: int = entry.priority
+            path: Path = Path(path_steps, cost, elapsed)
+
+            return path
         
         for (start_name, end_name), steps in graph.edges.items():
             if start_name != entry.current_stop_name:
                 continue
             for step in steps:
-                dep_sec = time_to_seconds(step.departure_time)
-                arr_sec = time_to_seconds(step.arrival_time)
+                dep_sec: int = time_to_seconds(step.departure_time)
+                arr_sec: int = time_to_seconds(step.arrival_time)
                 
                 if dep_sec >= entry.current_time_sec:
                     travel_time = arr_sec - entry.current_time_sec
@@ -186,11 +233,19 @@ def dijkstra(start: str, end: str, start_time_str: str) -> None:
                     )
                     heapq.heappush(queue, new_queue_entry)
 
-    print("No path found.")
+    raise NoPathFoundError(f"No path found from {start} to {end}")
 
+def prints():
+    print(f"Line {step.line} | {step.start_stop.name} {step.departure_time} -> {step.end_stop.name} {step.arrival_time}")
+    print(f"Total time: {entry.priority // 60} minutes {entry.priority % 60} seconds")
 
-def algorithm_a_to_b(a, b, optimization_criterium, start_time):
-    dijkstra(a, b, start_time)
+def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
+    path: Path = dijkstra(a, b, start_time)
+    
+    print("Schedule:")
+    for step in path.steps:
+        print(f"Line {step.line} | {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
+    print(f"Total time: {path.cost // 60} minutes {path.cost % 60} seconds")
     
 a = "Zajezdnia Obornicka"
 b = "Psie Pole"
