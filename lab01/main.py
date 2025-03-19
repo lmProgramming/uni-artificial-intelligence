@@ -22,8 +22,8 @@ for index, row in df.iterrows():
     graph.edges[key].append(step)
 
 def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
-    #path: Path = dijkstra(a, b, start_time, graph, "t")
-    path: Path = a_star_search(a, b, start_time, graph, optimization_criterion="t")
+    path: Path = dijkstra(a, b, start_time, graph, "t")
+    #path: Path = a_star_search(a, b, start_time, graph, optimization_criterion="t")
     
     print("Schedule:")
     for step in path.steps:
