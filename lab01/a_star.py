@@ -5,7 +5,7 @@ import heapq
 from itertools import count
 from collections import defaultdict
 from models import Node, Path, PathStep, CommunicationStep, NoPathFoundError, Graph
-from path_utils import heuristic, generate_path
+from path_utils import distance_heuristic, generate_path, clear_caches
 from utils import time_to_seconds, seconds_to_time
 from datetime import datetime
 import time as t
@@ -30,6 +30,8 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
         raise ValueError("Start stop does not exist in the graph.")
     if end not in graph.nodes:
         raise ValueError("End stop does not exist in the graph.")
+    
+    
        
     start_node: Node = graph.nodes[start]
     end_node: Node = graph.nodes[end]
@@ -39,7 +41,7 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
 
     queue: list[QueueEntry] = []
     counter = count()
-    initial_heuristic: float = heuristic(start_node, end_node)
+    initial_heuristic: float = distance_heuristic(start_node, end_node)
     heapq.heappush(queue, QueueEntry(initial_heuristic, next(counter), start_node.name, [], start_time_sec))
     
     visited: set[str] = set()
@@ -57,7 +59,8 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
             elapsed: float = t.perf_counter() - start_time_perf
             
             path: Path = generate_path(start, entry.path_taken, elapsed, entry.priority)
-
+            clear_caches()
+            
             return path
         
         current_node: Node = graph.nodes[entry.current_stop_name]
@@ -76,8 +79,8 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
                     
                     neighbor_node: Node = graph.nodes[end_name]
                     
-                    cost_so_far: float = entry.priority - heuristic(current_node, end_node) + travel_time
-                    estimated_remaining: float = heuristic(neighbor_node, end_node)
+                    cost_so_far: float = entry.priority - distance_heuristic(current_node, end_node) + travel_time
+                    estimated_remaining: float = distance_heuristic(neighbor_node, end_node)
                     total_priority: float = cost_so_far + estimated_remaining
                     
                     new_queue_entry = QueueEntry(
@@ -89,4 +92,5 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
                     )
                     heapq.heappush(queue, new_queue_entry)
 
+    clear_caches()
     raise NoPathFoundError(f"No path found from {start} to {end}")
