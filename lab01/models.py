@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import time
 from geopy.point import Point
-from utils import convert_to_24_hour_time
+import utils
 from collections import defaultdict
 
 
@@ -30,8 +30,8 @@ class CommunicationStep:
         
         company, line, departure_str, arrival_str = row[1:5]
         
-        departure_time: time = convert_to_24_hour_time(departure_str)
-        arrival_time: time = convert_to_24_hour_time(arrival_str)
+        departure_time: time = utils.convert_to_24_hour_time(departure_str)
+        arrival_time: time = utils.convert_to_24_hour_time(arrival_str)
         
         new_communication_step = CommunicationStep(company, line, departure_time, arrival_time, start_stop, end_stop)
         
@@ -40,6 +40,17 @@ class CommunicationStep:
     def __str__(self):
         return f"line {self.line} | {self.start_stop} {self.departure_time} -> {self.end_stop} {self.arrival_time}"
     
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, CommunicationStep):
+            return False
+        return (
+            self.company == other.company and
+            self.line == other.line and
+            self.departure_time == other.departure_time and
+            self.arrival_time == other.arrival_time and
+            self.start_stop == other.start_stop and
+            self.end_stop == other.end_stop
+        )   
 
 class Graph:
     def __init__(self) -> None:

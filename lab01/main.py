@@ -5,9 +5,9 @@ from a_star import a_star_search
 from models import Graph, CommunicationStep, Path    
     
 try:
-    df: pd.DataFrame = pd.read_csv("data/connection_graph_test.csv", dtype={"line": str}, engine="python")
+    df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str}, skipfooter=950000, engine="python")
 except:
-    df: pd.DataFrame = pd.read_csv("lab01/data/connection_graph_test.csv", dtype={"line": str}, engine="python")
+    df: pd.DataFrame = pd.read_csv("lab01/data/connection_graph.csv", dtype={"line": str}, skipfooter=950000, engine="python")
     
 #df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str})
         
@@ -19,12 +19,14 @@ for index, row in df.iterrows():
     for stop in [step.start_stop, step.end_stop]:
         if stop.name not in graph.nodes:
             graph.nodes[stop.name] = stop
-            graph.adjacency_list[stop.name] = []
-            
+            graph.adjacency_list[stop.name] = []            
     
     key: tuple[str, str] = (step.start_stop.name, step.end_stop.name)
     if key not in graph.edges:
         graph.edges[key] = []
+        
+    if step in graph.edges[key]:
+        continue
     graph.edges[key].append(step)
     graph.adjacency_list[step.start_stop.name].append(step)
 
@@ -44,7 +46,11 @@ b = "Bezpieczna"
 optimization_criterium = "t"
 start_time = "15:20:00"
 
-print(graph.nodes)
+#print(graph.nodes)
+#
+#print(len(graph.adjacency_list["Zajezdnia Obornicka"]))
+#for edge in graph.adjacency_list["Zajezdnia Obornicka"]:
+#    print(edge)
 
 # a = input("podaj przystanek początkowy A: ")
 # b = input("podaj przystanek końcowy B: ")
