@@ -3,7 +3,7 @@ from datetime import time
 from geopy.point import Point
 import utils
 from collections import defaultdict
-
+import sys
 
 @dataclass 
 class Node:
@@ -71,6 +71,13 @@ class Path:
     steps: list[PathStep]
     cost: float
     calculation_time: float
+    
+    def __str__(self):
+        print("Schedule:")
+        for step in self.steps:
+            print(f"Line {step.line} | {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
+        print(f"Total time: {self.cost // 60} minutes and {self.cost % 60} seconds", file=sys.stderr)
+        print(f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr)
     
     
 class NoPathFoundError(Exception):

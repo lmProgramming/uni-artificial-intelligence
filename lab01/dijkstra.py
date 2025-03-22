@@ -6,6 +6,7 @@ import heapq
 from itertools import count
 import time as t
 from models import Node, Path, PathStep, CommunicationStep, NoPathFoundError, Graph
+from utils import generate_path
 
 @dataclass(order=True)
 class QueueEntry:
@@ -16,6 +17,11 @@ class QueueEntry:
     current_time_sec: int = field(compare=False)
 
 def dijkstra(start: str, end: str, start_time_str: str, graph: Graph, optimization_criterion: str) -> Path:
+    if start not in graph.nodes:
+        raise ValueError("Start stop does not exist in the graph.")
+    if end not in graph.nodes:
+        raise ValueError("End stop does not exist in the graph.")
+       
     start_node: Node = graph.nodes[start]
     end_node: Node = graph.nodes[end]
     
@@ -48,11 +54,11 @@ def dijkstra(start: str, end: str, start_time_str: str, graph: Graph, optimizati
             if start_name != entry.current_stop_name:
                 continue
             for step in steps:
-                dep_sec: int = time_to_seconds(step.departure_time)
-                arr_sec: int = time_to_seconds(step.arrival_time)
+                departure_seconds: int = time_to_seconds(step.departure_time)
+                arrival_seconds: int = time_to_seconds(step.arrival_time)
                 
-                if dep_sec >= entry.current_time_sec:
-                    travel_time: int = arr_sec - entry.current_time_sec
+                if departure_seconds >= entry.current_time_sec:
+                    travel_time: int = arrival_seconds - entry.current_time_sec
                     if travel_time < 0:
                         travel_time += 86400  # handle crossing midnight
                     
@@ -62,7 +68,7 @@ def dijkstra(start: str, end: str, start_time_str: str, graph: Graph, optimizati
                         next(counter),
                         end_name,
                         entry.path_taken + [step],
-                        arr_sec
+                        arrival_seconds
                     )
                     heapq.heappush(queue, new_queue_entry)
 

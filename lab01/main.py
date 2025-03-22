@@ -4,17 +4,19 @@ from dijkstra import dijkstra
 from a_star import a_star_search
 from models import Graph, CommunicationStep, Path    
     
+csv_filename = "connection_graph.csv"
+separator = ","
 try:
-    df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str}, skipfooter=950000, engine="python")
+    rows = open(f"data/{csv_filename}", encoding="utf-8").read().splitlines()[1:]
 except:
-    df: pd.DataFrame = pd.read_csv("lab01/data/connection_graph.csv", dtype={"line": str}, skipfooter=950000, engine="python")
+    rows = open(f"lab01/data/{csv_filename}", encoding="utf-8").read().splitlines()[1:]
     
 #df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str})
         
 graph = Graph()
 
-for index, row in df.iterrows():
-    step: CommunicationStep = CommunicationStep.from_parsed_csv_line(list(row))
+for row in rows:
+    step: CommunicationStep = CommunicationStep.from_parsed_csv_line(list(row.split(separator)))
     
     for stop in [step.start_stop, step.end_stop]:
         if stop.name not in graph.nodes:
@@ -40,11 +42,11 @@ def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     print(f"Total time: {path.cost // 60} minutes and {path.cost % 60} seconds", file=sys.stderr)
     print(f"Execution time: {path.calculation_time:.4f} seconds", file=sys.stderr)
     
-a = "Zajezdnia Obornicka"
-#b = "Syrokomli"
-b = "Bezpieczna"
+a = "Górnickiego"
+b = "GAJ"
+#b = "Bezpieczna"
 optimization_criterium = "t"
-start_time = "15:20:00"
+start_time = "08:00:00"
 
 #print(graph.nodes)
 #
