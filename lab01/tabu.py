@@ -1,12 +1,18 @@
 from dataclasses import dataclass
 from random import sample
-from itertools import permutations
 from utils import time_to_seconds
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import time as t
-from models import Node, Path, CommunicationStep, NoPathFoundError, Graph
-from path_utils import generate_path
-from dijkstra import dijkstra  # zakładam, że możesz wywołać swój własny algorytm
+from models import Path, CommunicationStep, Graph, LineStep
+from dijkstra import dijkstra
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def get_shortest_path(start: str, end: str, start_time_sec: int, graph: Graph) -> Path:
+    """Wrapper na Dijkstrę z cache'owaniem."""
+    start_time_obj: time = (datetime.min + timedelta(seconds=start_time_sec)).time()
+    path: Path = dijkstra(start, end, start_time_obj, graph)
+    return path
 
 @dataclass
 class TabuSolution:
@@ -14,48 +20,47 @@ class TabuSolution:
     cost: int
     steps: list[CommunicationStep]
 
-def build_cost_matrix(stops: list[str], start_time: time, graph: Graph):
-    """Precompute shortest paths and costs between all pairs using Dijkstra."""
-    cost_matrix = {}
-    path_matrix = {}
-
-    for i, start in enumerate(stops):
-        for j, end in enumerate(stops):
-            if start == end:
-                continue
-            path: Path = dijkstra(start, end, start_time, graph)
-            cost_matrix[(start, end)] = path.cost
-            path_matrix[(start, end)] = path.steps
-            start_time = path.steps[-1].end_time
-
-    return cost_matrix, path_matrix
-
-def calculate_total_cost(route: list[str], cost_matrix: dict):
-    total_cost = 0
-    for i in range(len(route) - 1):
-        start = route[i]
-        end = route[i+1]
-        total_cost += cost_matrix.get((start, end), float('inf'))
-    return total_cost
-
-def assemble_steps(route: list[str], path_matrix: dict):
+def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Graph):
+    total_cost: float = 0
     steps = []
+    current_time = start_time
+
     for i in range(len(route) - 1):
-        start = route[i]
-        end = route[i+1]
-        steps += path_matrix.get((start, end), [])
+        start: str = route[i]
+        end: str = route[i+1]
+
+        # Wywołujemy Dijkstra z aktualnym czasem
+        path: Path = dijkstra(start, end, current_time, graph)
+        total_cost += path.cost
+        steps += path.steps
+
+        # Aktualizujemy czas na koniec tej trasy
+        current_time: time = path.steps[-1].end_time if path.steps else current_time
+
+    return total_cost, steps
+
+
+def assemble_steps(route: list[str], start_time: time, graph: Graph) -> list[LineStep]:
+    steps: list[LineStep] = []
+    current_time_sec: int = time_to_seconds(start_time)
+    for i in range(len(route) - 1):
+        start: str = route[i]
+        end: str = route[i+1]
+        path: Path = get_shortest_path(start, end, current_time_sec, graph)
+        steps += path.steps
+        last_step_end_time_sec = time_to_seconds(path.steps[-1].end_time)
+        if last_step_end_time_sec < current_time_sec:
+            last_step_end_time_sec += 86400
+        current_time_sec = last_step_end_time_sec
     return steps
 
-def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph, max_iterations=100, tabu_size=10):
-    stops: list[str] = [start] + required_stops + [start]
-    cost_matrix, path_matrix = build_cost_matrix(stops, start_time, graph)
 
-    # Initial random solution
+def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph, max_iterations=100, tabu_size=10) -> Path:
     middle: list[str] = sample(required_stops, len(required_stops))
     current_route: list[str] = [start] + middle + [start]
     best_route: list[str] = current_route.copy()
 
-    best_cost = calculate_total_cost(best_route, cost_matrix)
+    best_cost, best_steps = calculate_total_cost_and_steps(best_route, start_time, graph)
     tabu_list = []
 
     start_time_perf: float = t.perf_counter()
@@ -69,9 +74,9 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
                 new_route = current_route.copy()
                 new_route[i], new_route[j] = new_route[j], new_route[i]
                 if new_route not in tabu_list:
-                    cost = calculate_total_cost(new_route, cost_matrix)
+                    cost, steps = calculate_total_cost_and_steps(new_route, start_time, graph)
                     if cost < float('inf'):  # skip impossible paths
-                        neighborhood.append(TabuSolution(new_route, cost, []))
+                        neighborhood.append(TabuSolution(new_route, cost, steps))
 
         if not neighborhood:
             break  # No valid neighbors found
@@ -82,6 +87,7 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
         if best_neighbor.cost < best_cost:
             best_cost = best_neighbor.cost
             best_route = best_neighbor.route
+            best_steps = best_neighbor.steps
 
         current_route = best_neighbor.route
         tabu_list.append(current_route)
@@ -89,9 +95,5 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
             tabu_list.pop(0)
 
     elapsed: float = t.perf_counter() - start_time_perf
-    final_steps = assemble_steps(best_route, path_matrix)
     
-    print(start)
-    print(final_steps)
-
-    return Path(final_steps, best_cost, elapsed)
+    return Path(best_steps, best_cost, elapsed)

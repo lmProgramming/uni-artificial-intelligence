@@ -86,7 +86,7 @@ class Path:
     def pretty_print(self) -> None:
         print("Schedule:")
         for step in self.steps:
-            print(f"Line {step.line} | {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
+            print(f"{step.line}\t| {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
         print(f"Total cost: {self.cost} units", file=sys.stderr)
         print(f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr)
     
