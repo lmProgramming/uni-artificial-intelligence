@@ -5,13 +5,17 @@ import utils
 from collections import defaultdict
 import sys
 
-@dataclass 
+@dataclass
 class Node:
     name: str
     location: Point
-    
+    _hash: int = 0
+
+    def __post_init__(self):
+        self._hash = hash((self.name, self.location.format_unicode()))
+
     def __hash__(self):
-        return hash((self.name, self.location.format_unicode()))
+        return self._hash
      
 
 @dataclass
@@ -56,13 +60,13 @@ class CommunicationStep:
         )   
         
     def __hash__(self) -> int:
-        return hash((self.start_stop, self.end_stop))
+        return hash((self.company, self.line, self.departure_time, self.arrival_time, self.start_stop, self.end_stop))
 
 class Graph:
     def __init__(self) -> None:
         self.nodes: dict[str, Node] = {}
-        self.edges: dict[tuple[str, str], list[CommunicationStep]] = defaultdict(list)
-        self.adjacency_list: dict[str, list[CommunicationStep]] = defaultdict(list)
+        self.edges: dict[tuple[str, str], set[CommunicationStep]] = defaultdict(set)
+        self.adjacency_list: dict[str, set[CommunicationStep]] = defaultdict(set)
 
 @dataclass
 class PathStep:

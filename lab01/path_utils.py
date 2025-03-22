@@ -1,8 +1,16 @@
 from geopy.distance import geodesic
 import models
+from functools import lru_cache
 
-def heuristic(node1: models.Node, node2: models.Node) -> float:
+@lru_cache(maxsize=None)
+def distance_heuristic(node1: models.Node, node2: models.Node) -> float:
     return geodesic(node1.location, node2.location).kilometers ** 2
+
+def transfer_heuristic() -> float:
+    return geodesic(node1.location, node2.location).kilometers ** 2
+
+def clear_caches() -> None:
+    distance_heuristic.cache_clear()
 
 def generate_path(start: str, path_taken: list[models.CommunicationStep], elapsed: float, cost: float) -> models.Path:
     path_steps: list[models.PathStep] = []

@@ -2,53 +2,59 @@ import pandas as pd
 import sys
 from dijkstra import dijkstra
 from a_star import a_star_search
-from models import Graph, CommunicationStep, Path    
+from models import Graph, CommunicationStep, Path
     
 csv_filename = "connection_graph.csv"
 separator = ","
 
-rows: list[str]
+import pandas as pd
+
+df: pd.DataFrame
 try:
-    rows = open(f"data/{csv_filename}", encoding="utf-8").read().splitlines()[1:]
-except:
-    rows = open(f"lab01/data/{csv_filename}", encoding="utf-8").read().splitlines()[1:]
+    df = pd.read_csv(f"data/{csv_filename}", encoding="utf-8", sep=separator, skipfooter=800_000, engine="python")
+except FileNotFoundError:
+    df = pd.read_csv(f"lab01/data/{csv_filename}", encoding="utf-8", sep=separator, skipfooter=800_000, engine="python")
     
 #df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str})
         
 graph = Graph()
 
-for row in rows:
-    step: CommunicationStep = CommunicationStep.from_parsed_csv_line(row.split(separator))
+for _, row in df.iterrows():
+    step: CommunicationStep = CommunicationStep.from_parsed_csv_line(list(row))
     
     for stop in [step.start_stop, step.end_stop]:
         if stop.name not in graph.nodes:
             graph.nodes[stop.name] = stop
-            graph.adjacency_list[stop.name] = []            
+            graph.adjacency_list[stop.name] = set()
     
     key: tuple[str, str] = (step.start_stop.name, step.end_stop.name)
-    if key not in graph.edges:
-        graph.edges[key] = []
-        
-    if step in graph.edges[key]:
-        continue
-    graph.edges[key].append(step)
-    graph.adjacency_list[step.start_stop.name].append(step)
+    if step not in graph.edges[key]:
+        graph.edges[key].add(step)
+        graph.adjacency_list[step.start_stop.name].add(step)
     
 print("Done parsing .csv")
 
 def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
-    #path: Path = dijkstra(a, b, start_time, graph, "t")
-    path: Path = a_star_search(a, b, start_time, graph, optimization_criterion="t")
+    path: Path
     
-    print("Schedule:")
-    for step in path.steps:
-        print(f"Line {step.line} | {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
-    print(f"Total time: {path.cost // 60} minutes and {path.cost % 60} seconds", file=sys.stderr)
-    print(f"Execution time: {path.calculation_time:.4f} seconds", file=sys.stderr)
+    try:
+        print("Dijkstra")        
+        path = dijkstra(a, b, start_time, graph, optimization_criterium)
+        print(path)
+    except TypeError:
+        ...
+    
+    try:
+        print("Start A*")
+        path = a_star_search(a, b, start_time, graph, optimization_criterium)    
+        print(path)
+    except TypeError:
+        ...
+
     
 a = "Prusa"
-b = "DWORZEC GŁÓWNY"
-#b = "Bezpieczna"
+#b = "DWORZEC GŁÓWNY"
+b = "GAJ"
 optimization_criterium = "t"
 start_time = "08:00:00"
 
