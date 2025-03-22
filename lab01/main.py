@@ -2,18 +2,19 @@ import pandas as pd
 import sys
 from dijkstra import dijkstra
 from a_star import a_star_search
-from models import Graph, CommunicationStep, Path
+from models import Graph, CommunicationStep, Path, OptimizationCriterion
     
 csv_filename = "connection_graph.csv"
 separator = ","
+skipfooter = 0
 
 import pandas as pd
 
 df: pd.DataFrame
 try:
-    df = pd.read_csv(f"data/{csv_filename}", encoding="utf-8", sep=separator, skipfooter=800_000, engine="python")
+    df = pd.read_csv(f"data/{csv_filename}", encoding="utf-8", sep=separator, skipfooter=skipfooter, engine="python")
 except FileNotFoundError:
-    df = pd.read_csv(f"lab01/data/{csv_filename}", encoding="utf-8", sep=separator, skipfooter=800_000, engine="python")
+    df = pd.read_csv(f"lab01/data/{csv_filename}", encoding="utf-8", sep=separator, skipfooter=skipfooter, engine="python")
     
 #df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str})
         
@@ -34,28 +35,94 @@ for _, row in df.iterrows():
     
 print("Done parsing .csv")
 
+r'''
+Wykorzystując udostępniony plik connection_graph.csv zaimplementuj
+algorytm, który dla przystanku początkowe A oraz listy przystanków L=
+A2, . . . , An wyszuka najkrótszą trasę rozpoczynającą a A, przebiegającą
+przez wszystkie przystanki z L i wracającą do A. Jako funkcję kosztu trasy
+przyjmij, zależnie od decyzji użytkownika, łączny czas przejazdu lub liczbę
+przesiadek koniecznych do wykonania.
+Program powinien przyjmować na wejściu 4 linie:
+(a) przystanek początkowy A
+(b) listę oddzielonych średnikiem przystanków do odwiedzenia
+(c) kryterium optymalizacyjne: wartość t oznacza minimalizację czasu
+dojazdu, wartość p oznacza minimalizację liczby zmian linii
+(d) czas pojawienia się na przystanku początkowym
+Program powinien zwracać na standardowym wyjściu harmonogram prze-
+jazdu, wypisując w kolejnych liniach informacje o kolejno wykorzystanych
+liniach komunikacyjnych (nazwa linii, czas i przystanek, na którym wsia-
+damy do danej linii komunikacyjnej oraz czas i przystanek, na którym
+kończymy korzystać z danej linii). Na standardowym wyjściu błędów po-
+winien wypisywać wartość funkcji kosztu znalezionego rozwiązania oraz
+czas obliczeń liczony od wczytania danych do uzyskania rozwiązania.
+Punktacja:
+(a) algorytm rozwiązujący problem odwiedzenia wierzchołków oparty na
+przeszukiwaniu Tabu bez ograniczenia na rozmiar tablicy T (10 punk-
+tów)
+(b) modyfikacja (a) o dobór długości tablicy T w zależności od długości
+listy L w celu minimalizacji funkcji kosztu (5 punktów)
+(c) modyfikacja (a) o aspirację w celu minimalizacji funkcji kosztu (5
+punktów)
+9
+(d) rozszerzenie (a) poprzez dobór strategii próbkowania sąsiedztwa bie-
+żącego rozwiązania, które pozwoli na minimalizację funkcji kosztu i
+skrócenie czasu działania algorytmu (10 punktów)
+'''
+
 def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     path: Path
     
     try:
         print("Dijkstra")        
-        path = dijkstra(a, b, start_time, graph, optimization_criterium)
-        print(path)
-    except TypeError:
-        ...
-    
+        path = dijkstra(a, b, start_time, graph)
+        path.pretty_print()
+    except TypeError as e:
+        print(e)
+
     try:
         print("Start A*")
-        path = a_star_search(a, b, start_time, graph, optimization_criterium)    
-        print(path)
-    except TypeError:
-        ...
+        path = a_star_search(a, b, start_time, graph, OptimizationCriterion.TIME)    
+        path.pretty_print()
+    except TypeError as e:
+        print(e)
+    
+    try:
+        print("Start A* 2")
+        path = a_star_search(a, b, start_time, graph, OptimizationCriterion.TRANSFERS)    
+        path.pretty_print()
+    except TypeError as e:
+        print(e)
+        
+def algorithm_a_through_stops(a, stops, optimization_criterium, start_time) -> None:
+    path: Path
+    
+    try:
+        print("Dijkstra")        
+        path = dijkstra(a, b, start_time, graph)
+        path.pretty_print()
+    except TypeError as e:
+        print(e)
+
+    try:
+        print("Start A*")
+        path = a_star_search(a, b, start_time, graph, OptimizationCriterion.TIME)    
+        path.pretty_print()
+    except TypeError as e:
+        print(e)
+    
+    try:
+        print("Start A* 2")
+        path = a_star_search(a, b, start_time, graph, OptimizationCriterion.TRANSFERS)    
+        path.pretty_print()
+    except TypeError as e:
+        print(e)
+
 
     
 a = "Prusa"
-#b = "DWORZEC GŁÓWNY"
-b = "GAJ"
-optimization_criterium = "t"
+b = "DWORZEC GŁÓWNY"
+#b = "GAJ"
+optimization_criterium = "p"
 start_time = "08:00:00"
 
 #print(graph.nodes)

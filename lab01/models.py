@@ -4,6 +4,7 @@ from geopy.point import Point
 import utils
 from collections import defaultdict
 import sys
+import enum
 
 @dataclass
 class Node:
@@ -82,14 +83,18 @@ class Path:
     cost: float
     calculation_time: float
     
-    def __str__(self):
+    def pretty_print(self) -> None:
         print("Schedule:")
         for step in self.steps:
             print(f"Line {step.line} | {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
-        print(f"Total time: {self.cost // 60} minutes and {self.cost % 60} seconds", file=sys.stderr)
+        print(f"Total cost: {self.cost} units", file=sys.stderr)
         print(f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr)
     
     
 class NoPathFoundError(Exception):
     """Raised when no path is found between the start and end nodes."""
     pass
+
+class OptimizationCriterion(enum.Enum):
+    TIME = "time"
+    TRANSFERS = "transfers"

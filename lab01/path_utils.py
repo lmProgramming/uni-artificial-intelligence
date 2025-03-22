@@ -6,8 +6,9 @@ from functools import lru_cache
 def distance_heuristic(node1: models.Node, node2: models.Node) -> float:
     return geodesic(node1.location, node2.location).kilometers ** 2
 
-def transfer_heuristic() -> float:
-    return geodesic(node1.location, node2.location).kilometers ** 2
+def transfer_heuristic(transfer_count: int) -> float:
+    transfer_penalty_weight = 1000
+    return transfer_count * transfer_penalty_weight
 
 def clear_caches() -> None:
     distance_heuristic.cache_clear()
