@@ -5,9 +5,9 @@ from a_star import a_star_search
 from models import Graph, CommunicationStep, Path    
     
 try:
-    df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str}, skipfooter=950000, engine="python")
+    df: pd.DataFrame = pd.read_csv("data/connection_graph_test.csv", dtype={"line": str}, engine="python")
 except:
-    df: pd.DataFrame = pd.read_csv("lab01/data/connection_graph.csv", dtype={"line": str}, skipfooter=950000, engine="python")
+    df: pd.DataFrame = pd.read_csv("lab01/data/connection_graph_test.csv", dtype={"line": str}, engine="python")
     
 #df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str})
         
@@ -39,9 +39,12 @@ def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     print(f"Execution time: {path.calculation_time:.4f} seconds", file=sys.stderr)
     
 a = "Zajezdnia Obornicka"
-b = "Syrokomli"
+#b = "Syrokomli"
+b = "Bezpieczna"
 optimization_criterium = "t"
 start_time = "15:20:00"
+
+print(graph.nodes)
 
 # a = input("podaj przystanek początkowy A: ")
 # b = input("podaj przystanek końcowy B: ")

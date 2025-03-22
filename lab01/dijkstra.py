@@ -40,31 +40,7 @@ def dijkstra(start: str, end: str, start_time_str: str, graph: Graph, optimizati
         if entry.current_stop_name == end_node.name:
             elapsed: float = t.perf_counter() - start_time_perf
             
-            path_steps: list[PathStep] = []
-            
-            path_taken: list[CommunicationStep] = entry.path_taken
-            
-            step: CommunicationStep = path_taken[0]
-            last_line: str = step.line            
-            path_steps.append(PathStep(start, "", step.line, str(step.departure_time), ""))
-            
-            for i, step in enumerate(path_taken[:-1]):
-                if step.line == last_line:
-                    continue
-                last_line = step.line    
-                
-                path_steps[-1].end_time = str(path_taken[i - 1].arrival_time)
-                path_steps[-1].end_node_name = step.start_stop.name
-                
-                path_steps.append(PathStep(step.start_stop.name, "", last_line, str(step.departure_time), ""))   
-                            
-                
-            step = path_taken[-1]
-            path_steps[-1].end_time = str(step.arrival_time)
-            path_steps[-1].end_node_name = step.end_stop.name
-            
-            cost: int = entry.priority
-            path: Path = Path(path_steps, cost, elapsed)
+            path: Path = generate_path(start, entry.path_taken, elapsed, entry.priority)
 
             return path
         
