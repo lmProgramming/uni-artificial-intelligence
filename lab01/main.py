@@ -6,6 +6,8 @@ from models import Graph, CommunicationStep, Path
     
 csv_filename = "connection_graph.csv"
 separator = ","
+
+rows: list[str]
 try:
     rows = open(f"data/{csv_filename}", encoding="utf-8").read().splitlines()[1:]
 except:
@@ -16,7 +18,7 @@ except:
 graph = Graph()
 
 for row in rows:
-    step: CommunicationStep = CommunicationStep.from_parsed_csv_line(list(row.split(separator)))
+    step: CommunicationStep = CommunicationStep.from_parsed_csv_line(row.split(separator))
     
     for stop in [step.start_stop, step.end_stop]:
         if stop.name not in graph.nodes:
@@ -31,6 +33,8 @@ for row in rows:
         continue
     graph.edges[key].append(step)
     graph.adjacency_list[step.start_stop.name].append(step)
+    
+print("Done parsing .csv")
 
 def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     #path: Path = dijkstra(a, b, start_time, graph, "t")
@@ -42,8 +46,8 @@ def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     print(f"Total time: {path.cost // 60} minutes and {path.cost % 60} seconds", file=sys.stderr)
     print(f"Execution time: {path.calculation_time:.4f} seconds", file=sys.stderr)
     
-a = "Górnickiego"
-b = "GAJ"
+a = "Prusa"
+b = "DWORZEC GŁÓWNY"
 #b = "Bezpieczna"
 optimization_criterium = "t"
 start_time = "08:00:00"

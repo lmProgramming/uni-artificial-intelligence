@@ -9,6 +9,9 @@ import sys
 class Node:
     name: str
     location: Point
+    
+    def __hash__(self):
+        return hash((self.name, self.location.format_unicode()))
      
 
 @dataclass
@@ -51,6 +54,9 @@ class CommunicationStep:
             self.start_stop == other.start_stop and
             self.end_stop == other.end_stop
         )   
+        
+    def __hash__(self) -> int:
+        return hash((self.start_stop, self.end_stop))
 
 class Graph:
     def __init__(self) -> None:

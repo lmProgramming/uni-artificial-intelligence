@@ -6,7 +6,7 @@ import heapq
 from itertools import count
 import time as t
 from models import Node, Path, PathStep, CommunicationStep, NoPathFoundError, Graph
-from utils import generate_path
+from path_utils import generate_path
 
 @dataclass(order=True)
 class QueueEntry:

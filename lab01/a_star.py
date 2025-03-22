@@ -5,7 +5,8 @@ import heapq
 from itertools import count
 from collections import defaultdict
 from models import Node, Path, PathStep, CommunicationStep, NoPathFoundError, Graph
-from utils import heuristic, time_to_seconds, seconds_to_time, generate_path
+from path_utils import heuristic, generate_path
+from utils import time_to_seconds, seconds_to_time
 from datetime import datetime
 import time as t
 
@@ -59,7 +60,7 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
 
             return path
         
-        current_node = graph.nodes[entry.current_stop_name]
+        current_node: Node = graph.nodes[entry.current_stop_name]
 
         for (start_name, end_name), steps in graph.edges.items():
             if start_name != entry.current_stop_name:
@@ -73,10 +74,8 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
                     if travel_time < 0:
                         travel_time += 86400  # handle crossing midnight
                     
-                    # Get Node objects for heuristic
-                    neighbor_node = graph.nodes[end_name]
+                    neighbor_node: Node = graph.nodes[end_name]
                     
-                    # Adjust priority calculation
                     cost_so_far: float = entry.priority - heuristic(current_node, end_node) + travel_time
                     estimated_remaining: float = heuristic(neighbor_node, end_node)
                     total_priority: float = cost_so_far + estimated_remaining
