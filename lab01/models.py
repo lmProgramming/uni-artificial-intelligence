@@ -70,16 +70,16 @@ class Graph:
         self.adjacency_list: dict[str, set[CommunicationStep]] = defaultdict(set)
 
 @dataclass
-class PathStep:
+class LineStep:
     start_node_name: str
     end_node_name: str
     line: str
-    start_time: str
-    end_time: str
+    start_time: time
+    end_time: time
 
 @dataclass
 class Path:
-    steps: list[PathStep]
+    steps: list[LineStep]
     cost: float
     calculation_time: float
     

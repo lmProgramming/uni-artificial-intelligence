@@ -4,7 +4,7 @@ from datetime import time, timedelta
 import heapq
 from itertools import count
 from collections import defaultdict
-from models import Node, Path, PathStep, CommunicationStep, NoPathFoundError, Graph, OptimizationCriterion
+from models import Node, Path, LineStep, CommunicationStep, NoPathFoundError, Graph, OptimizationCriterion
 from path_utils import distance_heuristic, transfer_heuristic, generate_path, clear_caches
 from utils import time_to_seconds, seconds_to_time
 from datetime import datetime
@@ -17,16 +17,9 @@ class QueueEntry:
     current_stop_name: str = field(compare=False)
     path_taken: list[CommunicationStep] = field(compare=False)
     current_time_sec: int = field(compare=False)
-    transfer_count: int = field(compare=False)    
+    transfer_count: int = field(compare=False)
 
-def reconstruct_path(came_from, current_stop_name):
-    total_path = []
-    while current_stop_name in came_from:
-        current_stop_name, step = came_from[current_stop_name]
-        total_path.append(step)
-    return total_path[::-1]
-
-def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optimization_criterion: OptimizationCriterion) -> Path:
+def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion) -> Path:
     if start not in graph.nodes:
         raise ValueError("Start stop does not exist in the graph.")
     if end not in graph.nodes:
@@ -35,8 +28,7 @@ def a_star_search(start: str, end: str, start_time_str: str, graph: Graph, optim
     start_node: Node = graph.nodes[start]
     end_node: Node = graph.nodes[end]
     
-    start_time_obj: time = datetime.strptime(start_time_str, "%H:%M:%S").time()
-    start_time_sec: int = time_to_seconds(start_time_obj)
+    start_time_sec: int = time_to_seconds(start_time)
 
     queue: list[QueueEntry] = []
     counter = count()

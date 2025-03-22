@@ -1,3 +1,4 @@
+from datetime import datetime, time
 import pandas as pd
 from dijkstra import dijkstra
 from a_star import a_star_search
@@ -11,7 +12,7 @@ separator = ","
 skipfooter = 0
 
 if os.path.exists(f"data/{csv_filename}.pkl"):
-    with open(f"{csv_filename}.pkl", "rb") as f:
+    with open(f"data/{csv_filename}.pkl", "rb") as f:
         graph: Graph = pickle.load(f)
     print("Graph loaded from graph.pkl.")
 else:
@@ -38,8 +39,8 @@ else:
             graph.edges[key].add(step)
             graph.adjacency_list[step.start_stop.name].add(step)
             
-    with open(f"data/{csv_filename}.pkl", "wb") as f:
-        pickle.dump(graph, f)
+    with open(f"data/{csv_filename}.pkl", "wb") as f2:
+        pickle.dump(graph, f2)
     
     print("Done parsing .csv")
 
@@ -77,8 +78,8 @@ punktów)
 skrócenie czasu działania algorytmu (10 punktów)
 '''
 
-def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
-    path: Path
+def algorithm_a_to_b(a: str, b: str, optimization_criterium: OptimizationCriterion, start_time: time) -> None:
+    path: Path    
     
     try:
         print("Dijkstra")        
@@ -101,7 +102,7 @@ def algorithm_a_to_b(a, b, optimization_criterium, start_time) -> None:
     except TypeError as e:
         print(e)
         
-def algorithm_a_through_stops(a, stops, optimization_criterium, start_time) -> None:
+def algorithm_a_through_stops(a, stops, optimization_criterium, start_time: time) -> None:
     path: Path
     
     try:
@@ -116,7 +117,7 @@ def algorithm_a_through_stops(a, stops, optimization_criterium, start_time) -> N
 a = "Prusa"
 #b = "DWORZEC GŁÓWNY"
 b = "GAJ"
-optimization_criterium = "p"
+optimization_criterium_str = "p"
 start_time = "08:00:00"
 
 #print(graph.nodes)
@@ -130,5 +131,8 @@ start_time = "08:00:00"
 # optimization_criterium = input("podaj kryterium optymalizacyjne: wartość t oznacza minimalizację czasu dojazdu, wartość p oznacza minimalizację liczby zmian linii")
 # start_time = input("czas pojawienia się na przystanku początkowym")
     
-# algorithm_a_to_b(a, b, optimization_criterium, start_time)
-algorithm_a_through_stops(a, ["GAJ", "Zajezdnia Obornicka"], optimization_criterium, start_time)
+start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
+optimization_criterium: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterium_str == "t" else OptimizationCriterion.TRANSFERS
+    
+algorithm_a_to_b(a, b, optimization_criterium, start_time_obj)
+algorithm_a_through_stops(a, ["GAJ", "Zajezdnia Obornicka"], optimization_criterium, start_time_obj)

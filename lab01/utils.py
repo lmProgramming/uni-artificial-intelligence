@@ -1,7 +1,5 @@
 from datetime import time
 import re
-from geopy.distance import geodesic
-import models
 
 def time_to_seconds(t: time) -> int:
     return t.hour * 3600 + t.minute * 60 + t.second

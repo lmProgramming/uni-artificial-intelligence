@@ -16,7 +16,7 @@ class QueueEntry:
     path_taken: list[CommunicationStep] = field(compare=False)
     current_time_sec: int = field(compare=False)
 
-def dijkstra(start: str, end: str, start_time_str: str, graph: Graph) -> Path:
+def dijkstra(start: str, end: str, start_time: time, graph: Graph) -> Path:
     if start not in graph.nodes:
         raise ValueError("Start stop does not exist in the graph.")
     if end not in graph.nodes:
@@ -25,8 +25,7 @@ def dijkstra(start: str, end: str, start_time_str: str, graph: Graph) -> Path:
     start_node: Node = graph.nodes[start]
     end_node: Node = graph.nodes[end]
     
-    start_time_obj: time = datetime.strptime(start_time_str, "%H:%M:%S").time()
-    start_time_sec: int = time_to_seconds(start_time_obj)
+    start_time_sec: int = time_to_seconds(start_time)
 
     queue: list[QueueEntry] = []
     counter = count()
