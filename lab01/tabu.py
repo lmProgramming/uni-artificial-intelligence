@@ -1,3 +1,4 @@
+from random import randint
 from collections import deque
 from dataclasses import dataclass, field
 from random import sample
@@ -7,33 +8,9 @@ import time as t
 from models import OptimizationCriterion, Path, CommunicationStep, Graph, LineStep
 from a_star import a_star_search
 from functools import lru_cache
-from typing import Optional
-from abc import ABC, abstractmethod
+from tabu_strategies import FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy
 import heapq
 from collections import deque
-
-
-class TabuSizeStrategy(ABC):
-    @abstractmethod
-    def get_tabu_size(self, required_stops: list[str]) -> int:
-        pass
-
-
-class FixedTabuSizeStrategy(TabuSizeStrategy):
-    def __init__(self, size: int = 10):
-        self.size = size
-
-    def get_tabu_size(self, required_stops: list[str]) -> int:
-        return self.size
-
-
-class DynamicTabuSizeStrategy(TabuSizeStrategy):
-    def __init__(self, k: float = 5.0, min_size: int = 10):
-        self.k = k
-        self.min_size = min_size
-
-    def get_tabu_size(self, required_stops: list[str]) -> int:
-        return max(self.min_size, int(self.k * len(required_stops)))
 
 
 @lru_cache(maxsize=None)
@@ -98,7 +75,9 @@ def assemble_steps(route: list[str], start_time: time, graph: Graph) -> list[Lin
 @post_clear_cache
 def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph,
                 optimization_criterion: OptimizationCriterion, max_iterations=10,
-                tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy()) -> Path:
+                tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy(),
+                sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy()
+                ) -> Path:
 
     middle: list[str] = sample(required_stops, len(required_stops))
     current_route: list[str] = [start] + middle + [start]
@@ -116,20 +95,20 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
 
     for _ in range(max_iterations):
         neighborhood: list[TabuSolution] = []
+        swaps = sampling_strategy.generate_swaps(len(required_stops))
 
-        for i in range(1, len(required_stops)):
-            for j in range(i+1, len(required_stops)+1):
-                new_route: list[str] = current_route.copy()
-                new_route[i], new_route[j] = new_route[j], new_route[i]
-                route_tuple = tuple(new_route)
+        for i, j in swaps:
+            new_route: list[str] = current_route.copy()
+            new_route[i], new_route[j] = new_route[j], new_route[i]
+            route_tuple = tuple(new_route)
 
-                cost, steps = calculate_total_cost_and_steps(
-                    new_route, start_time, graph, optimization_criterion)
+            cost, steps = calculate_total_cost_and_steps(
+                new_route, start_time, graph, optimization_criterion)
 
-                if (route_tuple not in tabu_set) or (cost < best_cost):
-                    if cost < float('inf'):
-                        heapq.heappush(neighborhood, TabuSolution(
-                            cost, new_route, steps))
+            if (route_tuple not in tabu_set) or (cost < best_cost):
+                if cost < float('inf'):
+                    heapq.heappush(neighborhood, TabuSolution(
+                        cost, new_route, steps))
 
         if not neighborhood:
             break
