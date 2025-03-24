@@ -29,23 +29,22 @@ def update_best_state(entry: QueueEntry, best_state: dict[str, tuple[int, int]])
 
 def calculate_priority(entry: QueueEntry, current_node: Node, neighbor_node: Node, step: CommunicationStep,
                        travel_time: int, optimization_criterion: OptimizationCriterion) -> tuple[float, int]:
-    cost_so_far: float = 0
+    cost_so_far: float = entry.priority + travel_time
     estimated_remaining: float = 0
-    transfer_penalty: float = 0
     new_transfer_count: int = entry.transfer_count
 
     if optimization_criterion == OptimizationCriterion.TIME:
-        cost_so_far = entry.priority - distance_heuristic(current_node, neighbor_node) + travel_time
+        cost_so_far -= distance_heuristic(current_node, neighbor_node)
         estimated_remaining = distance_heuristic(neighbor_node, neighbor_node)
 
     if optimization_criterion == OptimizationCriterion.TRANSFERS:
-        transfer_penalty = transfer_heuristic(entry.transfer_count)
+        cost_so_far += transfer_heuristic(entry.transfer_count)
         if entry.path_taken:
             previous_step: CommunicationStep = entry.path_taken[-1]
             is_transfer: bool = previous_step.line != step.line
             new_transfer_count += 1 if is_transfer else 0
 
-    total_priority: float = cost_so_far + estimated_remaining + transfer_penalty
+    total_priority: float = cost_so_far + estimated_remaining
     return total_priority, new_transfer_count
 
 @post_clear_cache

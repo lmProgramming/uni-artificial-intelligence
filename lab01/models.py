@@ -87,8 +87,8 @@ class Path:
         print("Schedule:")
         for step in self.steps:
             print(f"{step.line}\t| {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
-        print(f"Total cost: {self.cost} units", file=sys.stderr)
-        print(f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr)
+        print(f"Total cost: {self.cost} units", file=sys.stderr, flush=True)
+        print(f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr, flush=True)
     
     
 class NoPathFoundError(Exception):

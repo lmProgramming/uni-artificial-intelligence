@@ -3,7 +3,7 @@ from random import sample
 from utils import time_to_seconds
 from datetime import datetime, time, timedelta
 import time as t
-from models import Path, CommunicationStep, Graph, LineStep
+from models import OptimizationCriterion, Path, CommunicationStep, Graph, LineStep
 from dijkstra import dijkstra
 from functools import lru_cache
 
@@ -23,19 +23,17 @@ class TabuSolution:
 def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Graph):
     total_cost: float = 0
     steps = []
-    current_time = start_time
+    current_time: time = start_time
 
     for i in range(len(route) - 1):
         start: str = route[i]
         end: str = route[i+1]
 
-        # Wywołujemy Dijkstra z aktualnym czasem
         path: Path = dijkstra(start, end, current_time, graph)
         total_cost += path.cost
         steps += path.steps
 
-        # Aktualizujemy czas na koniec tej trasy
-        current_time: time = path.steps[-1].end_time if path.steps else current_time
+        current_time = path.steps[-1].end_time if path.steps else current_time
 
     return total_cost, steps
 
@@ -55,7 +53,7 @@ def assemble_steps(route: list[str], start_time: time, graph: Graph) -> list[Lin
     return steps
 
 
-def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph, max_iterations=100, tabu_size=10) -> Path:
+def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion, max_iterations=100, tabu_size=10) -> Path:
     middle: list[str] = sample(required_stops, len(required_stops))
     current_route: list[str] = [start] + middle + [start]
     best_route: list[str] = current_route.copy()

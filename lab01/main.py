@@ -82,7 +82,7 @@ punktów)
 skrócenie czasu działania algorytmu (10 punktów)
 '''
 
-def algorithm_a_to_b(a: str, b: str, optimization_criterium: OptimizationCriterion, start_time: time) -> None:
+def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriterion, start_time: time) -> None:
     path: Path    
     
     try:
@@ -106,12 +106,12 @@ def algorithm_a_to_b(a: str, b: str, optimization_criterium: OptimizationCriteri
     except TypeError as e:
         print(e)
         
-def algorithm_a_through_stops(a, stops, optimization_criterium, start_time: time) -> None:
+def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time) -> None:
     path: Path
     
     try:
         print("Tabu")        
-        path = tabu_search(a, stops, start_time, graph)
+        path = tabu_search(a, stops, start_time, graph, optimization_criterion)
         path.pretty_print()
     except TypeError as e:
         print(e)
@@ -121,7 +121,7 @@ def algorithm_a_through_stops(a, stops, optimization_criterium, start_time: time
 a = "Prusa"
 #b = "DWORZEC GŁÓWNY"
 b = "PORT LOTNICZY"
-optimization_criterium_str = "p"
+optimization_criterion_str = "p"
 start_time = "08:00:00"
 
 # a = input("podaj przystanek początkowy A: ")
@@ -130,9 +130,9 @@ start_time = "08:00:00"
 # start_time = input("czas pojawienia się na przystanku początkowym")
     
 start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
-optimization_criterium: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterium_str == "t" else OptimizationCriterion.TRANSFERS
+optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
     
-#algorithm_a_to_b(a, b, optimization_criterium, start_time_obj)
-#algorithm_a_to_b(a, "pl. Orląt Lwowskich", optimization_criterium, start_time_obj)
-algorithm_a_to_b("pl. Orląt Lwowskich", b, optimization_criterium, start_time_obj)
-#algorithm_a_through_stops(a, ["pl. Orląt Lwowskich", "PORT LOTNICZY"], optimization_criterium, start_time_obj)
+algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
+algorithm_a_to_b(a, "pl. Orląt Lwowskich", optimization_criterion, start_time_obj)
+algorithm_a_to_b("pl. Orląt Lwowskich", b, optimization_criterion, start_time_obj)
+algorithm_a_through_stops(a, ["pl. Orląt Lwowskich", "PORT LOTNICZY"], optimization_criterion, start_time_obj)
