@@ -11,8 +11,12 @@ csv_filename = "connection_graph"
 separator = ","
 skipfooter = 0
 
-if False and os.path.exists(f"data/{csv_filename}.pkl"):
+if os.path.exists(f"data/{csv_filename}.pkl"):
     with open(f"data/{csv_filename}.pkl", "rb") as f:
+        graph: Graph = pickle.load(f)
+    print("Graph loaded from graph.pkl.")
+if os.path.exists(f"lab01/data/{csv_filename}.pkl"):
+    with open(f"lab01/data/{csv_filename}.pkl", "rb") as f:
         graph: Graph = pickle.load(f)
     print("Graph loaded from graph.pkl.")
 else:
@@ -128,5 +132,7 @@ start_time = "08:00:00"
 start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
 optimization_criterium: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterium_str == "t" else OptimizationCriterion.TRANSFERS
     
-algorithm_a_to_b(a, b, optimization_criterium, start_time_obj)
-algorithm_a_through_stops(a, ["DWORZEC AUTOBUSOWY", "PORT LOTNICZY"], optimization_criterium, start_time_obj)
+#algorithm_a_to_b(a, b, optimization_criterium, start_time_obj)
+#algorithm_a_to_b(a, "pl. Orląt Lwowskich", optimization_criterium, start_time_obj)
+algorithm_a_to_b("pl. Orląt Lwowskich", b, optimization_criterium, start_time_obj)
+#algorithm_a_through_stops(a, ["pl. Orląt Lwowskich", "PORT LOTNICZY"], optimization_criterium, start_time_obj)

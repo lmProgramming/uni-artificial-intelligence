@@ -6,7 +6,7 @@ import heapq
 from itertools import count
 import time as t
 from models import Node, Path, OptimizationCriterion, CommunicationStep, NoPathFoundError, Graph
-from path_utils import generate_path
+from path_utils import generate_path, post_clear_cache
 
 @dataclass(order=True)
 class QueueEntry:
@@ -16,6 +16,7 @@ class QueueEntry:
     path_taken: list[CommunicationStep] = field(compare=False)
     current_time_sec: int = field(compare=False)
 
+@post_clear_cache
 def dijkstra(start: str, end: str, start_time: time, graph: Graph) -> Path:
     if start not in graph.nodes:
         raise ValueError("Start stop does not exist in the graph.")
