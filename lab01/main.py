@@ -169,5 +169,6 @@ Bujwida
 FAT'''
 stops: list[str] = ["Babimojska", "Dworzec Świebodzki", "Brücknera",
                     "C.H. Korona", "Strachowicka", "MULICKA", "Bujwida", "FAT"]
+stops2: list[str] = ["C.H. Korona", "FAT"]
 algorithm_a_through_stops(
-    a, stops, optimization_criterion, start_time_obj)
+    a, stops2, optimization_criterion, start_time_obj)
