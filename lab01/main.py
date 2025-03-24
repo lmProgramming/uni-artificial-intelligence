@@ -1,8 +1,9 @@
 from datetime import datetime, time
+import sys
 import pandas as pd
 from dijkstra import dijkstra
 from a_star import a_star_search
-from tabu import tabu_search
+from tabu import tabu_search, DynamicTabuSizeStrategy, FixedTabuSizeStrategy
 from models import Graph, CommunicationStep, Path, OptimizationCriterion
 import pickle
 import os
@@ -10,14 +11,15 @@ import os
 csv_filename = "connection_graph"
 separator = ","
 skipfooter = 0
+graph: Graph
 
 if os.path.exists(f"data/{csv_filename}.pkl"):
     with open(f"data/{csv_filename}.pkl", "rb") as f:
-        graph: Graph = pickle.load(f)
+        graph = pickle.load(f)
     print("Graph loaded from graph.pkl.")
 if os.path.exists(f"lab01/data/{csv_filename}.pkl"):
     with open(f"lab01/data/{csv_filename}.pkl", "rb") as f:
-        graph: Graph = pickle.load(f)
+        graph = pickle.load(f)
     print("Graph loaded from graph.pkl.")
 else:
     df: pd.DataFrame
@@ -116,12 +118,24 @@ def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriteri
 def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time) -> None:
     path: Path
 
-    try:
-        print("Tabu")
-        path = tabu_search(a, stops, start_time, graph, optimization_criterion)
-        path.pretty_print()
-    except TypeError as e:
-        print(e)
+    print("Tabu")
+    path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME)
+    path.pretty_print()
+
+    print("Tabu 2")
+    path = tabu_search(a, stops, start_time, graph,
+                       OptimizationCriterion.TRANSFERS)
+    path.pretty_print()
+
+    print("Tabu 3")
+    path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME,
+                       tabu_size_strategy=DynamicTabuSizeStrategy(k=5.0, min_size=10))
+    path.pretty_print()
+
+    print("Tabu 4")
+    path = tabu_search(a, stops, start_time, graph,
+                       OptimizationCriterion.TRANSFERS, tabu_size_strategy=FixedTabuSizeStrategy(sys.maxsize))
+    path.pretty_print()
 
 
 a = "Prusa"
@@ -138,10 +152,22 @@ start_time = "08:00:00"
 start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
 optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
 
-algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
-algorithm_a_to_b(a, "pl. Orląt Lwowskich",
-                 optimization_criterion, start_time_obj)
-algorithm_a_to_b("pl. Orląt Lwowskich", b,
-                 optimization_criterion, start_time_obj)
+# algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
+# algorithm_a_to_b(a, "pl. Orląt Lwowskich",
+#                 optimization_criterion, start_time_obj)
+# algorithm_a_to_b("pl. Orląt Lwowskich", b,
+#                 optimization_criterion, start_time_obj)
+
+'''
+Babimojska
+Dworzec Świebodzki
+Brücknera
+C.H. Korona
+Strachowicka
+MULICKA
+Bujwida
+FAT'''
+stops: list[str] = ["Babimojska", "Dworzec Świebodzki", "Brücknera",
+                    "C.H. Korona", "Strachowicka", "MULICKA", "Bujwida", "FAT"]
 algorithm_a_through_stops(
-    a, ["pl. Orląt Lwowskich", "PORT LOTNICZY"], optimization_criterion, start_time_obj)
+    a, stops, optimization_criterion, start_time_obj)

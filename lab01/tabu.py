@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from random import sample
 from utils import time_to_seconds
 from datetime import datetime, time, timedelta
@@ -8,6 +8,7 @@ from a_star import a_star_search
 from functools import lru_cache
 from typing import Optional
 from abc import ABC, abstractmethod
+import heapq
 
 
 class TabuSizeStrategy(ABC):
@@ -25,7 +26,7 @@ class FixedTabuSizeStrategy(TabuSizeStrategy):
 
 
 class DynamicTabuSizeStrategy(TabuSizeStrategy):
-    def __init__(self, k: float = 1.0, min_size: int = 10):
+    def __init__(self, k: float = 5.0, min_size: int = 10):
         self.k = k
         self.min_size = min_size
 
@@ -34,19 +35,27 @@ class DynamicTabuSizeStrategy(TabuSizeStrategy):
 
 
 @lru_cache(maxsize=None)
-def get_shortest_path(start: str, end: str, start_time_sec: int, graph: Graph) -> Path:
-    """Wrapper na Dijkstrę z cache'owaniem."""
+def get_shortest_path(start: str, end: str, start_time_sec: int, graph: Graph, optimization_criterion: OptimizationCriterion) -> Path:
     start_time_obj: time = (
         datetime.min + timedelta(seconds=start_time_sec)).time()
-    path: Path = (start, end, start_time_obj, graph)
+    path: Path = a_star_search(
+        start, end, start_time_obj, graph, optimization_criterion)
     return path
 
 
-@dataclass
+@dataclass(order=True)
 class TabuSolution:
-    route: list[str]
     cost: int
-    steps: list[CommunicationStep]
+    route: list[str] = field(compare=False)
+    steps: list[CommunicationStep] = field(compare=False)
+
+
+def post_clear_cache(func):
+    def wrapper(*args, **kwargs) -> None:
+        result = func(*args, **kwargs)
+        get_shortest_path.cache_clear()
+        return result
+    return wrapper
 
 
 def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion):
@@ -58,8 +67,9 @@ def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Gr
         start: str = route[i]
         end: str = route[i+1]
 
-        path: Path = a_star_search(
-            start, end, current_time, graph, optimization_criterion)
+        start_time_sec: int = time_to_seconds(current_time)
+        path: Path = get_shortest_path(
+            start, end, start_time_sec, graph, optimization_criterion)
         total_cost += path.cost
         steps += path.steps
 
@@ -83,6 +93,7 @@ def assemble_steps(route: list[str], start_time: time, graph: Graph) -> list[Lin
     return steps
 
 
+@post_clear_cache
 def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph,
                 optimization_criterion: OptimizationCriterion, max_iterations=100,
                 tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy()) -> Path:
@@ -93,31 +104,29 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
 
     best_cost, best_steps = calculate_total_cost_and_steps(
         best_route, start_time, graph, optimization_criterion)
-    tabu_size = tabu_size_strategy.get_tabu_size(required_stops)
+    tabu_size: int = tabu_size_strategy.get_tabu_size(required_stops)
     tabu_list = []
 
     start_time_perf: float = t.perf_counter()
 
-    for iteration in range(max_iterations):
-        neighborhood = []
+    for _ in range(max_iterations):
+        neighborhood: list[TabuSolution] = []
 
-        # Neighborhood generation...
         for i in range(1, len(required_stops)):
             for j in range(i+1, len(required_stops)+1):
-                new_route = current_route.copy()
+                new_route: list[str] = current_route.copy()
                 new_route[i], new_route[j] = new_route[j], new_route[i]
                 if new_route not in tabu_list:
                     cost, steps = calculate_total_cost_and_steps(
                         new_route, start_time, graph, optimization_criterion)
                     if cost < float('inf'):
-                        neighborhood.append(
-                            TabuSolution(new_route, cost, steps))
+                        heapq.heappush(neighborhood, TabuSolution(
+                            cost, new_route, steps))
 
         if not neighborhood:
             break
 
-        neighborhood.sort(key=lambda x: x.cost)
-        best_neighbor = neighborhood[0]
+        best_neighbor: TabuSolution = heapq.heappop(neighborhood)
 
         if best_neighbor.cost < best_cost:
             best_cost = best_neighbor.cost
@@ -125,7 +134,8 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
             best_steps = best_neighbor.steps
 
         current_route = best_neighbor.route
-        tabu_list.append(current_route)
+        tabu_list.append(tuple(current_route))
+        # tabu_size = tabu_size_strategy.get_tabu_size(required_stops)
         if len(tabu_list) > tabu_size:
             tabu_list.pop(0)
 
