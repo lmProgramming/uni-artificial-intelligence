@@ -22,30 +22,33 @@ if os.path.exists(f"lab01/data/{csv_filename}.pkl"):
 else:
     df: pd.DataFrame
     try:
-        df = pd.read_csv(f"data/{csv_filename}.csv", encoding="utf-8", sep=separator, skipfooter=skipfooter, engine="python")
+        df = pd.read_csv(f"data/{csv_filename}.csv", encoding="utf-8",
+                         sep=separator, skipfooter=skipfooter, engine="python")
     except FileNotFoundError:
-        df = pd.read_csv(f"lab01/data/{csv_filename}.csv", encoding="utf-8", sep=separator, skipfooter=skipfooter, engine="python")
-    
-    #df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str})
-        
+        df = pd.read_csv(f"lab01/data/{csv_filename}.csv", encoding="utf-8",
+                         sep=separator, skipfooter=skipfooter, engine="python")
+
+    # df: pd.DataFrame = pd.read_csv("data/connection_graph.csv", dtype={"line": str})
+
     graph = Graph()
 
     for _, row in df.iterrows():
-        step: CommunicationStep = CommunicationStep.from_parsed_csv_line(list(row))
-        
+        step: CommunicationStep = CommunicationStep.from_parsed_csv_line(
+            list(row))
+
         for stop in [step.start_stop, step.end_stop]:
             if stop.name not in graph.nodes:
                 graph.nodes[stop.name] = stop
                 graph.adjacency_list[stop.name] = set()
-        
+
         key: tuple[str, str] = (step.start_stop.name, step.end_stop.name)
         if step not in graph.edges[key]:
             graph.edges[key].add(step)
             graph.adjacency_list[step.start_stop.name].add(step)
-            
+
     with open(f"data/{csv_filename}.pkl", "wb") as f2:
         pickle.dump(graph, f2)
-    
+
     print("Done parsing .csv")
 
 r'''
@@ -82,11 +85,12 @@ punktów)
 skrócenie czasu działania algorytmu (10 punktów)
 '''
 
+
 def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriterion, start_time: time) -> None:
-    path: Path    
-    
+    path: Path
+
     try:
-        print("Dijkstra")        
+        print("Dijkstra")
         path = dijkstra(a, b, start_time, graph)
         path.pretty_print()
     except TypeError as e:
@@ -94,32 +98,34 @@ def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriteri
 
     try:
         print("Start A*")
-        path = a_star_search(a, b, start_time, graph, OptimizationCriterion.TIME)    
+        path = a_star_search(a, b, start_time, graph,
+                             OptimizationCriterion.TIME)
         path.pretty_print()
     except TypeError as e:
         print(e)
-    
+
     try:
         print("Start A* 2")
-        path = a_star_search(a, b, start_time, graph, OptimizationCriterion.TRANSFERS)    
+        path = a_star_search(a, b, start_time, graph,
+                             OptimizationCriterion.TRANSFERS)
         path.pretty_print()
     except TypeError as e:
         print(e)
-        
+
+
 def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time) -> None:
     path: Path
-    
+
     try:
-        print("Tabu")        
+        print("Tabu")
         path = tabu_search(a, stops, start_time, graph, optimization_criterion)
         path.pretty_print()
     except TypeError as e:
         print(e)
 
 
-    
 a = "Prusa"
-#b = "DWORZEC GŁÓWNY"
+# b = "DWORZEC GŁÓWNY"
 b = "PORT LOTNICZY"
 optimization_criterion_str = "p"
 start_time = "08:00:00"
@@ -128,11 +134,14 @@ start_time = "08:00:00"
 # b = input("podaj przystanek końcowy B: ")
 # optimization_criterium = input("podaj kryterium optymalizacyjne: wartość t oznacza minimalizację czasu dojazdu, wartość p oznacza minimalizację liczby zmian linii")
 # start_time = input("czas pojawienia się na przystanku początkowym")
-    
+
 start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
 optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
-    
+
 algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
-algorithm_a_to_b(a, "pl. Orląt Lwowskich", optimization_criterion, start_time_obj)
-algorithm_a_to_b("pl. Orląt Lwowskich", b, optimization_criterion, start_time_obj)
-algorithm_a_through_stops(a, ["pl. Orląt Lwowskich", "PORT LOTNICZY"], optimization_criterion, start_time_obj)
+algorithm_a_to_b(a, "pl. Orląt Lwowskich",
+                 optimization_criterion, start_time_obj)
+algorithm_a_to_b("pl. Orląt Lwowskich", b,
+                 optimization_criterion, start_time_obj)
+algorithm_a_through_stops(
+    a, ["pl. Orląt Lwowskich", "PORT LOTNICZY"], optimization_criterion, start_time_obj)

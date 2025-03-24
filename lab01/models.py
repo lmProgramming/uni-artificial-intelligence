@@ -6,6 +6,7 @@ from collections import defaultdict
 import sys
 import enum
 
+
 @dataclass
 class Node:
     name: str
@@ -17,7 +18,7 @@ class Node:
 
     def __hash__(self):
         return self._hash
-     
+
 
 @dataclass
 class CommunicationStep:
@@ -27,27 +28,28 @@ class CommunicationStep:
     arrival_time: time
     start_stop: Node
     end_stop: Node
-    
+
     @staticmethod
     def from_parsed_csv_line(row: list[str]) -> "CommunicationStep":
         start_stop_point: Point = Point(latitude=row[7], longitude=row[8])
         start_stop = Node(row[5], start_stop_point)
-        
+
         end_stop_point: Point = Point(latitude=row[9], longitude=row[10])
         end_stop = Node(row[6], end_stop_point)
-        
+
         company, line, departure_str, arrival_str = row[1:5]
-        
+
         departure_time: time = utils.convert_to_24_hour_time(departure_str)
         arrival_time: time = utils.convert_to_24_hour_time(arrival_str)
-        
-        new_communication_step = CommunicationStep(company, line, departure_time, arrival_time, start_stop, end_stop)
-        
+
+        new_communication_step = CommunicationStep(
+            company, line, departure_time, arrival_time, start_stop, end_stop)
+
         return new_communication_step
-    
+
     def __str__(self):
         return f"line {self.line} | {self.start_stop} {self.departure_time} -> {self.end_stop} {self.arrival_time}"
-    
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CommunicationStep):
             return False
@@ -58,16 +60,20 @@ class CommunicationStep:
             self.arrival_time == other.arrival_time and
             self.start_stop == other.start_stop and
             self.end_stop == other.end_stop
-        )   
-        
+        )
+
     def __hash__(self) -> int:
         return hash((self.company, self.line, self.departure_time, self.arrival_time, self.start_stop, self.end_stop))
+
 
 class Graph:
     def __init__(self) -> None:
         self.nodes: dict[str, Node] = {}
-        self.edges: dict[tuple[str, str], set[CommunicationStep]] = defaultdict(set)
-        self.adjacency_list: dict[str, set[CommunicationStep]] = defaultdict(set)
+        self.edges: dict[tuple[str, str],
+                         set[CommunicationStep]] = defaultdict(set)
+        self.adjacency_list: dict[str,
+                                  set[CommunicationStep]] = defaultdict(set)
+
 
 @dataclass
 class LineStep:
@@ -77,23 +83,27 @@ class LineStep:
     start_time: time
     end_time: time
 
+
 @dataclass
 class Path:
     steps: list[LineStep]
     cost: float
     calculation_time: float
-    
+
     def pretty_print(self) -> None:
         print("Schedule:")
         for step in self.steps:
-            print(f"{step.line}\t| {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
+            print(
+                f"{step.line}\t| {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
         print(f"Total cost: {self.cost} units", file=sys.stderr, flush=True)
-        print(f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr, flush=True)
-    
-    
+        print(
+            f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr, flush=True)
+
+
 class NoPathFoundError(Exception):
     """Raised when no path is found between the start and end nodes."""
     pass
+
 
 class OptimizationCriterion(enum.Enum):
     TIME = "time"
