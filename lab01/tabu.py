@@ -4,10 +4,10 @@ from random import sample
 from utils import time_to_seconds
 from datetime import datetime, time, timedelta
 import time as t
-from models import OptimizationCriterion, Path, CommunicationStep, Graph, LineStep
+from models import NoPathFoundError, OptimizationCriterion, Path, CommunicationStep, Graph, LineStep
 from a_star import a_star_search
 from functools import lru_cache
-from tabu_strategies import FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy
+from tabu_strategies import AspirationStrategy, AllowTabuAspirationStrategy, StrictTabuAspirationStrategy, FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy
 import heapq
 from collections import deque
 
@@ -46,8 +46,11 @@ def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Gr
         end: str = route[i+1]
 
         start_time_sec: int = time_to_seconds(current_time)
-        path: Path = get_shortest_path(
-            start, end, start_time_sec, graph, optimization_criterion)
+        try:
+            path: Path = get_shortest_path(
+                start, end, start_time_sec, graph, optimization_criterion)
+        except NoPathFoundError:
+            return float("inf"), None
         total_cost += path.cost
         steps += path.steps
 
@@ -56,26 +59,12 @@ def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Gr
     return total_cost, steps
 
 
-def assemble_steps(route: list[str], start_time: time, graph: Graph) -> list[LineStep]:
-    steps: list[LineStep] = []
-    current_time_sec: int = time_to_seconds(start_time)
-    for i in range(len(route) - 1):
-        start: str = route[i]
-        end: str = route[i+1]
-        path: Path = get_shortest_path(start, end, current_time_sec, graph)
-        steps += path.steps
-        last_step_end_time_sec: int = time_to_seconds(path.steps[-1].end_time)
-        if last_step_end_time_sec < current_time_sec:
-            last_step_end_time_sec += 86400
-        current_time_sec = last_step_end_time_sec
-    return steps
-
-
 @post_clear_cache
 def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph,
-                optimization_criterion: OptimizationCriterion, max_iterations=10,
+                optimization_criterion: OptimizationCriterion, max_iterations=5,
                 tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy(),
-                sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy()
+                sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy(),
+                aspiration_strategy: AspirationStrategy = StrictTabuAspirationStrategy(),
                 ) -> Path:
 
     middle: list[str] = sample(required_stops, len(required_stops))
@@ -100,15 +89,21 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
         for i, j in swaps:
             new_route: list[str] = current_route.copy()
             new_route[i], new_route[j] = new_route[j], new_route[i]
-            route_tuple = tuple(new_route)
+            route_tuple: tuple[str, ...] = tuple(new_route)
+
+            print(new_route)
+
+            if not aspiration_strategy.allow_route(tabu_set, route_tuple):
+                continue
 
             cost, steps = calculate_total_cost_and_steps(
                 new_route, start_time, graph, optimization_criterion)
 
             if (route_tuple not in tabu_set) or (cost < best_cost):
-                if cost < float('inf'):
-                    heapq.heappush(neighborhood, TabuSolution(
-                        cost, new_route, steps))
+                print("found with cost", cost)
+                print("while best cost is", best_cost)
+                heapq.heappush(neighborhood, TabuSolution(
+                    cost, new_route, steps))
 
         if not neighborhood:
             break

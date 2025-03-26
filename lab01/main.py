@@ -63,7 +63,6 @@ if __name__ == "__main__":
     graph: Graph = load_from_pickle_fallback_csv()
 
     a = "Prusa"
-    # b = "DWORZEC GŁÓWNY"
     b = "PORT LOTNICZY"
     optimization_criterion_str = "p"
     start_time = "08:00:00"
@@ -95,4 +94,4 @@ if __name__ == "__main__":
                         "C.H. Korona", "Strachowicka", "MULICKA", "Bujwida", "FAT"]
     stops2: list[str] = ["C.H. Korona", "FAT"]
     algorithm_a_through_stops(
-        a, stops2, optimization_criterion, start_time_obj)
+        a, stops, optimization_criterion, start_time_obj)

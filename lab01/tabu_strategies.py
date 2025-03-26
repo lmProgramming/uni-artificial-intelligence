@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 class TabuSizeStrategy(ABC):
     @abstractmethod
     def get_tabu_size(self, required_stops: list[str]) -> int:
-        pass
+        ...
 
 
 class FixedTabuSizeStrategy(TabuSizeStrategy):
@@ -28,7 +28,7 @@ class DynamicTabuSizeStrategy(TabuSizeStrategy):
 class NeighborhoodSamplingStrategy(ABC):
     @abstractmethod
     def generate_swaps(self, num_stops: int) -> list[tuple[int, int]]:
-        pass
+        ...
 
 
 class FullSamplingStrategy(NeighborhoodSamplingStrategy):
@@ -51,3 +51,19 @@ class RandomSamplingStrategy(NeighborhoodSamplingStrategy):
             j: int = randint(i+1, num_stops)
             swaps.add((i, j))
         return list(swaps)
+
+
+class AspirationStrategy(ABC):
+    @abstractmethod
+    def allow_route(self, tabu_set: set[tuple[str]], route: tuple[str, ...]) -> bool:
+        ...
+
+
+class StrictTabuAspirationStrategy(AspirationStrategy):
+    def allow_route(self, tabu_set, route) -> bool:
+        return route not in tabu_set
+
+
+class AllowTabuAspirationStrategy(AspirationStrategy):
+    def allow_route(self, tabu_set, route) -> bool:
+        return True
