@@ -3,7 +3,8 @@ import sys
 import pandas as pd
 from dijkstra import dijkstra
 from a_star import a_star_search
-from tabu import tabu_search, DynamicTabuSizeStrategy, FixedTabuSizeStrategy
+from tabu import tabu_search
+from tabu_strategies import DynamicTabuSizeStrategy, FixedTabuSizeStrategy, FullSamplingStrategy, RandomSamplingStrategy
 from models import Graph, CommunicationStep, Path, OptimizationCriterion
 import pickle
 import os
@@ -119,22 +120,23 @@ def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time
     path: Path
 
     print("Tabu")
-    path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME)
+    path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME,
+                       sampling_strategy=RandomSamplingStrategy(3))
     path.pretty_print()
 
     print("Tabu 2")
     path = tabu_search(a, stops, start_time, graph,
-                       OptimizationCriterion.TRANSFERS)
+                       OptimizationCriterion.TRANSFERS, sampling_strategy=RandomSamplingStrategy(3))
     path.pretty_print()
 
     print("Tabu 3")
     path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME,
-                       tabu_size_strategy=DynamicTabuSizeStrategy(k=5.0, min_size=10))
+                       tabu_size_strategy=DynamicTabuSizeStrategy(k=5.0, min_size=10), sampling_strategy=RandomSamplingStrategy(3))
     path.pretty_print()
 
     print("Tabu 4")
     path = tabu_search(a, stops, start_time, graph,
-                       OptimizationCriterion.TRANSFERS, tabu_size_strategy=FixedTabuSizeStrategy(sys.maxsize))
+                       OptimizationCriterion.TRANSFERS, tabu_size_strategy=FixedTabuSizeStrategy(sys.maxsize), sampling_strategy=RandomSamplingStrategy(3))
     path.pretty_print()
 
 

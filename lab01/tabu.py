@@ -95,7 +95,8 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
 
     for _ in range(max_iterations):
         neighborhood: list[TabuSolution] = []
-        swaps = sampling_strategy.generate_swaps(len(required_stops))
+        swaps: list[tuple[int, int]] = sampling_strategy.generate_swaps(
+            len(required_stops))
 
         for i, j in swaps:
             new_route: list[str] = current_route.copy()
