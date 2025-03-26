@@ -95,6 +95,7 @@ def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimiza
                     # handle midnight wrap
                     travel_time: int = (
                         arrival_seconds - entry.current_time_sec) % 86400
+
                     neighbor_node: Node = graph.nodes[end_name]
                     total_priority, new_transfer_count = calculate_priority(
                         entry, current_node, neighbor_node, step, travel_time, optimization_criterion

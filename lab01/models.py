@@ -13,10 +13,10 @@ class Node:
     location: Point
     _hash: int = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._hash = hash((self.name, self.location.format_unicode()))
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self._hash
 
 

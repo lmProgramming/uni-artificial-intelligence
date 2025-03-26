@@ -39,7 +39,7 @@ def post_clear_cache(func):
 
 def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion):
     total_cost: float = 0
-    steps = []
+    steps: list[LineStep] = []
     current_time: time = start_time
 
     for i in range(len(route) - 1):
@@ -65,7 +65,7 @@ def assemble_steps(route: list[str], start_time: time, graph: Graph) -> list[Lin
         end: str = route[i+1]
         path: Path = get_shortest_path(start, end, current_time_sec, graph)
         steps += path.steps
-        last_step_end_time_sec = time_to_seconds(path.steps[-1].end_time)
+        last_step_end_time_sec: int = time_to_seconds(path.steps[-1].end_time)
         if last_step_end_time_sec < current_time_sec:
             last_step_end_time_sec += 86400
         current_time_sec = last_step_end_time_sec

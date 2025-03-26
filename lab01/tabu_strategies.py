@@ -33,7 +33,7 @@ class NeighborhoodSamplingStrategy(ABC):
 
 class FullSamplingStrategy(NeighborhoodSamplingStrategy):
     def generate_swaps(self, num_stops: int) -> list[tuple[int, int]]:
-        swaps = []
+        swaps: list[tuple[int, int]] = []
         for i in range(1, num_stops):
             for j in range(i+1, num_stops+1):
                 swaps.append((i, j))
@@ -45,7 +45,7 @@ class RandomSamplingStrategy(NeighborhoodSamplingStrategy):
         self.sample_size: int = sample_size
 
     def generate_swaps(self, num_stops: int) -> list[tuple[int, int]]:
-        swaps: set[tuple] = set()
+        swaps: set[tuple[int, int]] = set()
         while len(swaps) < min(self.sample_size, (num_stops * (num_stops - 1)) // 2):
             i: int = randint(1, num_stops - 1)
             j: int = randint(i+1, num_stops)
