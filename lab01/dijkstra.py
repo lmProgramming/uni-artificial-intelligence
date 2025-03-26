@@ -1,11 +1,10 @@
 from dataclasses import dataclass, field
 from datetime import time
 from utils import time_to_seconds
-from datetime import datetime
 import heapq
 from itertools import count
 import time as t
-from models import Node, Path, OptimizationCriterion, CommunicationStep, NoPathFoundError, Graph
+from models import Node, Path, CommunicationStep, NoPathFoundError, Graph
 from path_utils import generate_path, post_clear_cache
 
 

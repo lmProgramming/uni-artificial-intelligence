@@ -1,4 +1,3 @@
-from random import randint
 from collections import deque
 from dataclasses import dataclass, field
 from random import sample
