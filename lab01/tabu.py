@@ -1,6 +1,5 @@
 from collections import deque
 from dataclasses import dataclass, field
-from random import sample
 from utils import time_to_seconds
 from datetime import datetime, time, timedelta
 import time as t
@@ -10,7 +9,6 @@ from functools import lru_cache
 from tabu_strategies import AspirationStrategy, AllowTabuAspirationStrategy, StrictTabuAspirationStrategy, FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy
 import heapq
 from collections import deque
-from path_utils import distance_heuristic
 from geopy.distance import geodesic
 
 
