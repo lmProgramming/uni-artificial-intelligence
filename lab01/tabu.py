@@ -4,12 +4,14 @@ from random import sample
 from utils import time_to_seconds
 from datetime import datetime, time, timedelta
 import time as t
-from models import NoPathFoundError, OptimizationCriterion, Path, CommunicationStep, Graph, LineStep
+from models import NoPathFoundError, OptimizationCriterion, Path, CommunicationStep, Graph, LineStep, Node
 from a_star import a_star_search
 from functools import lru_cache
 from tabu_strategies import AspirationStrategy, AllowTabuAspirationStrategy, StrictTabuAspirationStrategy, FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy
 import heapq
 from collections import deque
+from path_utils import distance_heuristic
+from geopy.distance import geodesic
 
 
 @lru_cache(maxsize=None)
@@ -59,6 +61,27 @@ def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Gr
     return total_cost, steps
 
 
+def estimate_good_first_path(start: str, route: list[str], graph: Graph) -> list[str]:
+    nodes: list[Node] = [graph.nodes[stop] for stop in route]
+
+    start_node: Node = graph.nodes[start]
+
+    current_stop: Node = start_node
+
+    path: list[str] = [start]
+
+    while len(nodes) > 0:
+        nodes.sort(key=lambda node: geodesic(
+            current_stop.location, node.location).km)
+
+        path.append(nodes[0].name)
+        current_stop = nodes.pop(0)
+
+    path.append(start)
+
+    return path
+
+
 @post_clear_cache
 def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph,
                 optimization_criterion: OptimizationCriterion, max_iterations=5,
@@ -67,8 +90,8 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
                 aspiration_strategy: AspirationStrategy = StrictTabuAspirationStrategy(),
                 ) -> Path:
 
-    middle: list[str] = sample(required_stops, len(required_stops))
-    current_route: list[str] = [start] + middle + [start]
+    current_route: list[str] = estimate_good_first_path(
+        start, required_stops, graph)
     best_route: list[str] = current_route.copy()
 
     best_cost, best_steps = calculate_total_cost_and_steps(
@@ -91,8 +114,6 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
             new_route[i], new_route[j] = new_route[j], new_route[i]
             route_tuple: tuple[str, ...] = tuple(new_route)
 
-            print(new_route)
-
             if not aspiration_strategy.allow_route(tabu_set, route_tuple):
                 continue
 
@@ -100,8 +121,6 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
                 new_route, start_time, graph, optimization_criterion)
 
             if (route_tuple not in tabu_set) or (cost < best_cost):
-                print("found with cost", cost)
-                print("while best cost is", best_cost)
                 heapq.heappush(neighborhood, TabuSolution(
                     cost, new_route, steps))
 
