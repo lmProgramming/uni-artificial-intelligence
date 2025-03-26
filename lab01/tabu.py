@@ -87,6 +87,12 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
                 sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy(),
                 aspiration_strategy: AspirationStrategy = StrictTabuAspirationStrategy(),
                 ) -> Path:
+    tabu_size: int = tabu_size_strategy.get_tabu_size(required_stops)
+
+    tabu_set: set[tuple] = set()
+    tabu_queue: deque[tuple] = deque()
+
+    start_time_perf: float = t.perf_counter()
 
     current_route: list[str] = estimate_good_first_path(
         start, required_stops, graph)
@@ -94,13 +100,6 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
 
     best_cost, best_steps = calculate_total_cost_and_steps(
         best_route, start_time, graph, optimization_criterion)
-
-    tabu_size: int = tabu_size_strategy.get_tabu_size(required_stops)
-
-    tabu_set: set[tuple] = set()
-    tabu_queue: deque[tuple] = deque()
-
-    start_time_perf: float = t.perf_counter()
 
     for _ in range(max_iterations):
         neighborhood: list[TabuSolution] = []
