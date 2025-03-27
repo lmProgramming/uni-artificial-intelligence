@@ -1,3 +1,4 @@
+from collections import defaultdict
 import pandas as pd
 from models import Graph, CommunicationStep
 import pickle
@@ -44,7 +45,7 @@ def load_from_csv() -> Graph:
         for stop in [step.start_stop, step.end_stop]:
             if stop.name not in graph.nodes:
                 graph.nodes[stop.name] = stop
-                graph.adjacency_list[stop.name] = list()
+                graph.adjacency_list[stop.name] = defaultdict(list)
 
         key: tuple[str, str] = (step.start_stop.name, step.end_stop.name)
         if step not in graph.edges[key]:

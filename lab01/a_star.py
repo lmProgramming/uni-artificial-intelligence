@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from models import Node, Path, Graph, CommunicationStep, NoPathFoundError, OptimizationCriterion
-from path_utils import distance_heuristic, transfer_heuristic, generate_path, post_clear_cache
+from path_utils import distance_heuristic, transfer_heuristic, generate_path, post_clear_cache, get_first_departure_seconds
 from utils import time_to_seconds
 from datetime import time
 import heapq
@@ -88,31 +88,34 @@ def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimiza
             return generate_path(start, entry.path_taken, elapsed, entry.priority)
 
         current_node: Node = graph.nodes[entry.current_stop_name]
-        for connection in graph.adjacency_list[start_name]:
-        for (start_name, end_name), steps in graph.edges.items():
-            if start_name != entry.current_stop_name:
-                continue
-            for step in steps:
-                departure_seconds: int = time_to_seconds(step.departure_time)
-                arrival_seconds: int = time_to_seconds(step.arrival_time)
+        for line, connections in graph.adjacency_list[start].items():
+            # print(connections)
+            step: CommunicationStep = get_first_departure_seconds(
+                entry.current_time_sec, connections)
+            print(step)
+            print(line)
+            print(entry.current_time_sec)
 
-                if departure_seconds >= entry.current_time_sec:
-                    # handle midnight wrap
-                    travel_time: int = (
-                        arrival_seconds - entry.current_time_sec) % 86400
+            departure_seconds: int = time_to_seconds(step.departure_time)
+            arrival_seconds: int = time_to_seconds(step.arrival_time)
 
-                    neighbor_node: Node = graph.nodes[end_name]
-                    total_priority, new_transfer_count = calculate_priority(
-                        entry, current_node, neighbor_node, step, travel_time, optimization_criterion
-                    )
-                    new_entry = QueueEntry(
-                        total_priority,
-                        next(counter),
-                        end_name,
-                        entry.path_taken + [step],
-                        arrival_seconds,
-                        new_transfer_count
-                    )
-                    heapq.heappush(queue, new_entry)
+            if departure_seconds >= entry.current_time_sec:
+                # handle midnight wrap
+                travel_time: int = (
+                    arrival_seconds - entry.current_time_sec) % 86400
+
+                neighbor_node: Node = graph.nodes[step.end_stop.name]
+                total_priority, new_transfer_count = calculate_priority(
+                    entry, current_node, neighbor_node, step, travel_time, optimization_criterion
+                )
+                new_entry = QueueEntry(
+                    total_priority,
+                    next(counter),
+                    step.end_stop.name,
+                    entry.path_taken + [step],
+                    arrival_seconds,
+                    new_transfer_count
+                )
+                heapq.heappush(queue, new_entry)
 
     raise NoPathFoundError(f"No path found from {start} to {end}")

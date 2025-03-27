@@ -2,6 +2,8 @@ from geopy.distance import geodesic
 import models
 from functools import lru_cache
 from datetime import time
+from bisect import bisect_left
+from utils import seconds_to_time
 
 
 @lru_cache(maxsize=None)
@@ -24,6 +26,21 @@ def post_clear_cache(func):
         clear_caches()
         return result
     return wrapper
+
+
+def get_first_departure(departure_time: time, departures: list[models.CommunicationStep]) -> models.CommunicationStep:
+    departure_times: list[time] = [step.departure_time for step in departures]
+
+    index: int = bisect_left(departure_times, departure_time)
+
+    if index < len(departures):
+        return departures[index]
+    return departures[0]
+
+
+def get_first_departure_seconds(departure_time_seconds: int, departures: list[models.CommunicationStep]) -> models.CommunicationStep:
+    departure_time: time = seconds_to_time(departure_time_seconds)
+    return get_first_departure(departure_time, departures)
 
 
 def generate_path(start: str, path_taken: list[models.CommunicationStep], elapsed: float, cost: float) -> models.Path:

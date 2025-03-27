@@ -49,10 +49,10 @@ def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time
 if __name__ == "__main__":
     graph: Graph = load_from_pickle_fallback_csv()
 
-    a = "Prusa"
-    b = "PORT LOTNICZY"
+    a = "Klęka"
+    b = "Kątna"
     optimization_criterion_str = "p"
-    start_time = "08:00:00"
+    start_time = "12:00:00"
 
     # a = input("podaj przystanek początkowy A: ")
     # b = input("podaj przystanek końcowy B: ")
@@ -62,7 +62,8 @@ if __name__ == "__main__":
     start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
     optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
 
-    # algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
+    algorithm_a_to_b(a, b, optimization_criterion,
+                     start_time_obj, use_dijkstra=False)
 
     stops: list[str] = ["Babimojska", "Dworzec Świebodzki", "Brücknera",
                         "C.H. Korona", "Strachowicka", "MULICKA", "Bujwida", "FAT"]
