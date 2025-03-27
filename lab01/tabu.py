@@ -4,21 +4,46 @@ from dataclasses import dataclass, field
 from utils import time_to_seconds
 from datetime import datetime, time, timedelta
 import time as t
-from models import NoPathFoundError, OptimizationCriterion, Path, CommunicationStep, Graph, LineStep, Node
+from models import (
+    NoPathFoundError,
+    OptimizationCriterion,
+    Path,
+    CommunicationStep,
+    Graph,
+    LineStep,
+    Node,
+)
 from a_star import a_star_search
 from functools import lru_cache
-from tabu_strategies import AspirationStrategy, AllowTabuAspirationStrategy, StrictTabuAspirationStrategy, FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy, FirstPathStrategy, EstimateClosestFirstPathStrategy
+from tabu_strategies import (
+    AspirationStrategy,
+    AllowTabuAspirationStrategy,
+    StrictTabuAspirationStrategy,
+    FixedTabuSizeStrategy,
+    TabuSizeStrategy,
+    FullSamplingStrategy,
+    NeighborhoodSamplingStrategy,
+    FirstPathStrategy,
+    EstimateClosestFirstPathStrategy,
+)
 import heapq
 from collections import deque
 from geopy.distance import geodesic
 
 
 @lru_cache(maxsize=None)
-def get_shortest_path(start: str, end: str, start_time_sec: int, graph: Graph, optimization_criterion: OptimizationCriterion) -> Path:
+def get_shortest_path(
+    start: str,
+    end: str,
+    start_time_sec: int,
+    graph: Graph,
+    optimization_criterion: OptimizationCriterion,
+) -> Path:
     start_time_obj: time = (
         datetime.min + timedelta(seconds=start_time_sec)).time()
     path: Path = a_star_search(
-        start, end, start_time_obj, graph, optimization_criterion)
+        start, end, start_time_obj, graph, optimization_criterion
+    )
     return path
 
 
@@ -34,22 +59,29 @@ def post_clear_cache(func):
         result = func(*args, **kwargs)
         get_shortest_path.cache_clear()
         return result
+
     return wrapper
 
 
-def calculate_total_cost_and_steps(route: list[str], start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion):
+def calculate_total_cost_and_steps(
+    route: list[str],
+    start_time: time,
+    graph: Graph,
+    optimization_criterion: OptimizationCriterion,
+):
     total_cost: float = 0
     steps: list[LineStep] = []
     current_time: time = start_time
 
     for i in range(len(route) - 1):
         start: str = route[i]
-        end: str = route[i+1]
+        end: str = route[i + 1]
 
         start_time_sec: int = time_to_seconds(current_time)
         try:
             path: Path = get_shortest_path(
-                start, end, start_time_sec, graph, optimization_criterion)
+                start, end, start_time_sec, graph, optimization_criterion
+            )
         except NoPathFoundError:
             return float("inf"), None
         total_cost += path.cost
@@ -82,13 +114,17 @@ def estimate_good_first_path(start: str, route: list[str], graph: Graph) -> list
 
 
 @post_clear_cache
-def tabu_search(start: str, required_stops: list[str], start_time: time, graph: Graph,
-                optimization_criterion: OptimizationCriterion, max_iterations=5,
-                tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy(),
-                sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy(),
-                aspiration_strategy: AspirationStrategy = StrictTabuAspirationStrategy(),
-
-                ) -> Path:
+def tabu_search(
+    start: str,
+    required_stops: list[str],
+    start_time: time,
+    graph: Graph,
+    optimization_criterion: OptimizationCriterion,
+    max_iterations=5,
+    tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy(),
+    sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy(),
+    aspiration_strategy: AspirationStrategy = StrictTabuAspirationStrategy(),
+) -> Path:
     tabu_size: int = tabu_size_strategy.get_tabu_size(required_stops)
 
     tabu_set: set[tuple] = set()
@@ -101,12 +137,14 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
     best_route: list[str] = current_route.copy()
 
     best_cost, best_steps = calculate_total_cost_and_steps(
-        best_route, start_time, graph, optimization_criterion)
+        best_route, start_time, graph, optimization_criterion
+    )
 
     for _ in range(max_iterations):
         neighborhood: list[TabuSolution] = []
         swaps: list[tuple[int, int]] = sampling_strategy.generate_swaps(
-            len(required_stops))
+            len(required_stops)
+        )
 
         with ThreadPoolExecutor(max_workers=8) as executor:
             futures = []
@@ -118,9 +156,15 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
                 if not aspiration_strategy.allow_route(tabu_set, route_tuple):
                     continue
 
-                futures.append(executor.submit(
-                    calculate_total_cost_and_steps, new_route, start_time, graph, optimization_criterion
-                ))
+                futures.append(
+                    executor.submit(
+                        calculate_total_cost_and_steps,
+                        new_route,
+                        start_time,
+                        graph,
+                        optimization_criterion,
+                    )
+                )
 
             for future, (i, j) in zip(futures, swaps):
                 cost, steps = future.result()

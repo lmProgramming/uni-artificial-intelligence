@@ -43,7 +43,8 @@ class CommunicationStep:
         arrival_time: time = utils.convert_to_24_hour_time(arrival_str)
 
         new_communication_step = CommunicationStep(
-            company, line, departure_time, arrival_time, start_stop, end_stop)
+            company, line, departure_time, arrival_time, start_stop, end_stop
+        )
 
         return new_communication_step
 
@@ -54,25 +55,32 @@ class CommunicationStep:
         if not isinstance(other, CommunicationStep):
             return False
         return (
-            self.company == other.company and
-            self.line == other.line and
-            self.departure_time == other.departure_time and
-            self.arrival_time == other.arrival_time and
-            self.start_stop == other.start_stop and
-            self.end_stop == other.end_stop
+            self.company == other.company
+            and self.line == other.line
+            and self.departure_time == other.departure_time
+            and self.arrival_time == other.arrival_time
+            and self.start_stop == other.start_stop
+            and self.end_stop == other.end_stop
         )
 
     def __hash__(self) -> int:
-        return hash((self.company, self.line, self.departure_time, self.arrival_time, self.start_stop, self.end_stop))
+        return hash(
+            (
+                self.company,
+                self.line,
+                self.departure_time,
+                self.arrival_time,
+                self.start_stop,
+                self.end_stop,
+            )
+        )
 
 
 class Graph:
     def __init__(self) -> None:
         self.nodes: dict[str, Node] = {}
-        self.edges: dict[tuple[str, str],
-                         set[CommunicationStep]] = defaultdict(set)
-        self.adjacency_list: dict[str,
-                                  set[CommunicationStep]] = defaultdict(set)
+        self.edges: dict[tuple[str, str], set[CommunicationStep]] = defaultdict(set)
+        self.adjacency_list: dict[str, set[CommunicationStep]] = defaultdict(set)
 
 
 @dataclass
@@ -94,14 +102,19 @@ class Path:
         print("Schedule:")
         for step in self.steps:
             print(
-                f"{step.line}\t| {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}")
+                f"{step.line}\t| {step.start_node_name} {step.start_time} -> {step.end_node_name} {step.end_time}"
+            )
         print(f"Total cost: {self.cost} units", file=sys.stderr, flush=True)
         print(
-            f"Execution time: {self.calculation_time:.4f} seconds", file=sys.stderr, flush=True)
+            f"Execution time: {self.calculation_time:.4f} seconds",
+            file=sys.stderr,
+            flush=True,
+        )
 
 
 class NoPathFoundError(Exception):
     """Raised when no path is found between the start and end nodes."""
+
     pass
 
 

@@ -1,6 +1,18 @@
 from dataclasses import dataclass, field
-from models import Node, Path, Graph, CommunicationStep, NoPathFoundError, OptimizationCriterion
-from path_utils import distance_heuristic, transfer_heuristic, generate_path, post_clear_cache
+from models import (
+    Node,
+    Path,
+    Graph,
+    CommunicationStep,
+    NoPathFoundError,
+    OptimizationCriterion,
+)
+from path_utils import (
+    distance_heuristic,
+    transfer_heuristic,
+    generate_path,
+    post_clear_cache,
+)
 from utils import time_to_seconds
 from datetime import time
 import heapq
@@ -19,23 +31,30 @@ class QueueEntry:
 
 
 def should_skip(entry: QueueEntry, best_state: dict[str, tuple[int, int]]) -> bool:
-    current_state: tuple[int, int] | None = best_state.get(
-        entry.current_stop_name)
+    current_state: tuple[int, int] | None = best_state.get(entry.current_stop_name)
     if current_state is None:
         return False
     best_transfers, best_arrival = current_state
-    return (entry.transfer_count > best_transfers) or \
-           (entry.transfer_count ==
-            best_transfers and entry.current_time_sec >= best_arrival)
+    return (entry.transfer_count > best_transfers) or (
+        entry.transfer_count == best_transfers
+        and entry.current_time_sec >= best_arrival
+    )
 
 
-def update_best_state(entry: QueueEntry, best_state: dict[str, tuple[int, int]]) -> None:
-    best_state[entry.current_stop_name] = (
-        entry.transfer_count, entry.current_time_sec)
+def update_best_state(
+    entry: QueueEntry, best_state: dict[str, tuple[int, int]]
+) -> None:
+    best_state[entry.current_stop_name] = (entry.transfer_count, entry.current_time_sec)
 
 
-def calculate_priority(entry: QueueEntry, current_node: Node, neighbor_node: Node, step: CommunicationStep,
-                       travel_time: int, optimization_criterion: OptimizationCriterion) -> tuple[float, int]:
+def calculate_priority(
+    entry: QueueEntry,
+    current_node: Node,
+    neighbor_node: Node,
+    step: CommunicationStep,
+    travel_time: int,
+    optimization_criterion: OptimizationCriterion,
+) -> tuple[float, int]:
     cost_so_far: float = entry.priority + travel_time
     estimated_remaining: float = 0
     new_transfer_count: int = entry.transfer_count
@@ -56,7 +75,13 @@ def calculate_priority(entry: QueueEntry, current_node: Node, neighbor_node: Nod
 
 
 @post_clear_cache
-def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion) -> Path:
+def a_star_search(
+    start: str,
+    end: str,
+    start_time: time,
+    graph: Graph,
+    optimization_criterion: OptimizationCriterion,
+) -> Path:
     if start not in graph.nodes or end not in graph.nodes:
         raise ValueError("Start or end stop does not exist in the graph.")
 
@@ -66,11 +91,18 @@ def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimiza
 
     queue: list[QueueEntry] = []
     counter = count()
-    initial_heuristic: float = distance_heuristic(
-        start_node, end_node) if optimization_criterion == OptimizationCriterion.TIME else 0
+    initial_heuristic: float = (
+        distance_heuristic(start_node, end_node)
+        if optimization_criterion == OptimizationCriterion.TIME
+        else 0
+    )
 
-    heapq.heappush(queue, QueueEntry(initial_heuristic, next(
-        counter), start_node.name, [], start_time_sec, 0))
+    heapq.heappush(
+        queue,
+        QueueEntry(
+            initial_heuristic, next(counter), start_node.name, [], start_time_sec, 0
+        ),
+    )
     best_state: dict[str, tuple[int, int]] = {}
     start_time_perf: float = t.perf_counter()
 
@@ -94,11 +126,17 @@ def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimiza
                 if departure_seconds >= entry.current_time_sec:
                     # handle midnight wrap
                     travel_time: int = (
-                        arrival_seconds - entry.current_time_sec) % 86400
+                        arrival_seconds - entry.current_time_sec
+                    ) % 86400
 
                     neighbor_node: Node = graph.nodes[end_name]
                     total_priority, new_transfer_count = calculate_priority(
-                        entry, current_node, neighbor_node, step, travel_time, optimization_criterion
+                        entry,
+                        current_node,
+                        neighbor_node,
+                        step,
+                        travel_time,
+                        optimization_criterion,
                     )
                     new_entry = QueueEntry(
                         total_priority,
@@ -106,7 +144,7 @@ def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimiza
                         end_name,
                         entry.path_taken + [step],
                         arrival_seconds,
-                        new_transfer_count
+                        new_transfer_count,
                     )
                     heapq.heappush(queue, new_entry)
 
