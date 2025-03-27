@@ -124,6 +124,7 @@ def tabu_search(
     tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy(),
     sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy(),
     aspiration_strategy: AspirationStrategy = StrictTabuAspirationStrategy(),
+    first_path_strategy: FirstPathStrategy = EstimateClosestFirstPathStrategy()
 ) -> Path:
     tabu_size: int = tabu_size_strategy.get_tabu_size(required_stops)
 
@@ -132,7 +133,7 @@ def tabu_search(
 
     start_time_perf: float = t.perf_counter()
 
-    current_route: list[str] = estimate_good_first_path(
+    current_route: list[str] = first_path_strategy.calculate_first_path(
         start, required_stops, graph)
     best_route: list[str] = current_route.copy()
 

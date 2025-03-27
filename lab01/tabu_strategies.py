@@ -81,11 +81,11 @@ class OrderedFirstPathStrategy(FirstPathStrategy):
     def calculate_first_path(
         self, start: str, route: list[str], graph: Graph
     ) -> list[str]:
-        return route
+        return [start] + route + [start]
 
 
 class EstimateClosestFirstPathStrategy(FirstPathStrategy):
-    def estimate_good_first_path(
+    def calculate_first_path(
         self, start: str, route: list[str], graph: Graph
     ) -> list[str]:
         nodes: list[Node] = [graph.nodes[stop] for stop in route]
@@ -98,7 +98,8 @@ class EstimateClosestFirstPathStrategy(FirstPathStrategy):
 
         while len(nodes) > 0:
             nodes.sort(
-                key=lambda node: geodesic(current_stop.location, node.location).km
+                key=lambda node: geodesic(
+                    current_stop.location, node.location).km
             )
 
             path.append(nodes[0].name)
