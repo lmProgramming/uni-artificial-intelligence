@@ -1,5 +1,7 @@
 from random import randint
 from abc import ABC, abstractmethod
+from models import Graph, Node
+from geopy.distance import geodesic
 
 
 class TabuSizeStrategy(ABC):
@@ -67,3 +69,36 @@ class StrictTabuAspirationStrategy(AspirationStrategy):
 class AllowTabuAspirationStrategy(AspirationStrategy):
     def allow_route(self, tabu_set, route) -> bool:
         return True
+
+
+class FirstPathStrategy(ABC):
+    @abstractmethod
+    def calculate_first_path(self, start: str, route: list[str], graph: Graph) -> list[str]:
+        ...
+
+
+class OrderedFirstPathStrategy(FirstPathStrategy):
+    def calculate_first_path(self, start: str, route: list[str], graph: Graph) -> list[str]:
+        return route
+
+
+class EstimateClosestFirstPathStrategy(FirstPathStrategy):
+    def estimate_good_first_path(self, start: str, route: list[str], graph: Graph) -> list[str]:
+        nodes: list[Node] = [graph.nodes[stop] for stop in route]
+
+        start_node: Node = graph.nodes[start]
+
+        current_stop: Node = start_node
+
+        path: list[str] = [start]
+
+        while len(nodes) > 0:
+            nodes.sort(key=lambda node: geodesic(
+                current_stop.location, node.location).km)
+
+            path.append(nodes[0].name)
+            current_stop = nodes.pop(0)
+
+        path.append(start)
+
+        return path

@@ -7,7 +7,7 @@ import time as t
 from models import NoPathFoundError, OptimizationCriterion, Path, CommunicationStep, Graph, LineStep, Node
 from a_star import a_star_search
 from functools import lru_cache
-from tabu_strategies import AspirationStrategy, AllowTabuAspirationStrategy, StrictTabuAspirationStrategy, FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy
+from tabu_strategies import AspirationStrategy, AllowTabuAspirationStrategy, StrictTabuAspirationStrategy, FixedTabuSizeStrategy, TabuSizeStrategy, FullSamplingStrategy, NeighborhoodSamplingStrategy, FirstPathStrategy, EstimateClosestFirstPathStrategy
 import heapq
 from collections import deque
 from geopy.distance import geodesic
@@ -87,6 +87,7 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
                 tabu_size_strategy: TabuSizeStrategy = FixedTabuSizeStrategy(),
                 sampling_strategy: NeighborhoodSamplingStrategy = FullSamplingStrategy(),
                 aspiration_strategy: AspirationStrategy = StrictTabuAspirationStrategy(),
+
                 ) -> Path:
     tabu_size: int = tabu_size_strategy.get_tabu_size(required_stops)
 
