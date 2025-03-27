@@ -8,76 +8,65 @@ from models import Graph, Path, OptimizationCriterion
 from graph_provider import load_from_pickle_fallback_csv
 
 
-def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriterion, start_time: time) -> None:
+def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriterion, start_time: time, use_dijkstra=False) -> None:
     path: Path
 
-    try:
+    if use_dijkstra:
         print("Dijkstra")
         path = dijkstra(a, b, start_time, graph)
         path.pretty_print()
-    except TypeError as e:
-        print(e)
-
-    try:
+    else:
         print("Start A*")
         path = a_star_search(a, b, start_time, graph,
-                             OptimizationCriterion.TIME)
+                             optimization_criterion)
         path.pretty_print()
-    except TypeError as e:
-        print(e)
-
-    try:
-        print("Start A* 2")
-        path = a_star_search(a, b, start_time, graph,
-                             OptimizationCriterion.TRANSFERS)
-        path.pretty_print()
-    except TypeError as e:
-        print(e)
 
 
 def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time) -> None:
     path: Path
 
     print("Tabu")
-    path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME,
-                       sampling_strategy=RandomSamplingStrategy(3))
-    path.pretty_print()
-
-    print("Tabu 2")
-    path = tabu_search(a, stops, start_time, graph,
-                       OptimizationCriterion.TRANSFERS, sampling_strategy=RandomSamplingStrategy(3))
-    path.pretty_print()
-
-    print("Tabu 3")
-    path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME,
+    path = tabu_search(a, stops, start_time, graph, optimization_criterion,
                        tabu_size_strategy=DynamicTabuSizeStrategy(k=5.0, min_size=10), sampling_strategy=RandomSamplingStrategy(3))
-    path.pretty_print()
-
-    print("Tabu 4")
-    path = tabu_search(a, stops, start_time, graph,
-                       OptimizationCriterion.TRANSFERS, tabu_size_strategy=FixedTabuSizeStrategy(sys.maxsize), sampling_strategy=RandomSamplingStrategy(3))
     path.pretty_print()
 
 
 if __name__ == "__main__":
     graph: Graph = load_from_pickle_fallback_csv()
 
-    a = "Klęka"
-    b = "Kątna"
-    optimization_criterion_str = "p"
-    start_time = "12:00:00"
+    one_or_two: str = input("wybierz algorytm 1 lub 2: [1/2] ")
 
-    # a = input("podaj przystanek początkowy A: ")
-    # b = input("podaj przystanek końcowy B: ")
-    # optimization_criterium = input("podaj kryterium optymalizacyjne: wartość t oznacza minimalizację czasu dojazdu, wartość p oznacza minimalizację liczby zmian linii")
-    # start_time = input("czas pojawienia się na przystanku początkowym")
+    if one_or_two == "1":
+        a: str = input("podaj przystanek początkowy A: ")
+        b: str = input("podaj przystanek końcowy B: ")
 
-    start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
-    optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
+        optimization_criterion_str: str = input(
+            "podaj kryterium optymalizacyjne: wartość t oznacza minimalizację czasu dojazdu, wartość p oznacza minimalizację liczby zmian linii: ")
+        start_time: str = input(
+            "czas pojawienia się na przystanku początkowym: ")
 
-    algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
+        start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
+        optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
 
-    stops: list[str] = ["Babimojska", "Dworzec Świebodzki", "Brücknera",
-                        "C.H. Korona", "Strachowicka", "MULICKA", "Bujwida", "FAT"]
-    algorithm_a_through_stops(
-        a, stops, optimization_criterion, start_time_obj)
+        algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
+    else:
+        a = input("podaj przystanek początkowy A: ")
+        optimization_criterion_str = input(
+            "podaj kryterium optymalizacyjne: wartość t oznacza minimalizację czasu dojazdu, wartość p oznacza minimalizację liczby zmian linii: ")
+        start_time = input(
+            "czas pojawienia się na przystanku początkowym: ")
+
+        stops: list[str] = []
+
+        while True:
+            stop: str = input(
+                "podaj przystanek lub wciśnij enter aby zakończyć: ")
+            if stop == "" or stop == "\n":
+                break
+            stops.append(stop)
+
+        start_time_obj = datetime.strptime(start_time, "%H:%M:%S").time()
+        optimization_criterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
+
+        algorithm_a_through_stops(
+            a, stops, optimization_criterion, start_time_obj)
