@@ -18,6 +18,10 @@ class QueueEntry:
 
 
 @post_clear_cache
+def dijkstra_clear(start: str, end: str, start_time: time, graph: Graph) -> Path:
+    return dijkstra(start, end, start_time, graph)
+
+
 def dijkstra(start: str, end: str, start_time: time, graph: Graph) -> Path:
     if start not in graph.nodes:
         raise ValueError("Start stop does not exist in the graph.")

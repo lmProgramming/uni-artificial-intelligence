@@ -44,12 +44,13 @@ def load_from_csv() -> Graph:
         for stop in [step.start_stop, step.end_stop]:
             if stop.name not in graph.nodes:
                 graph.nodes[stop.name] = stop
-                graph.adjacency_list[stop.name] = set()
+                graph.adjacency_list[stop.name] = list()
 
         key: tuple[str, str] = (step.start_stop.name, step.end_stop.name)
         if step not in graph.edges[key]:
-            graph.edges[key].add(step)
-            graph.adjacency_list[step.start_stop.name].add(step)
+            graph.add_edge(step.start_stop.name, step.end_stop.name, step)
+
+    graph.sort_adjacency_list()
 
     with open(f"data/{csv_filename}.pkl", "wb") as f2:
         pickle.dump(graph, f2)

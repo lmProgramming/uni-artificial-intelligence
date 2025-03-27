@@ -56,6 +56,10 @@ def calculate_priority(entry: QueueEntry, current_node: Node, neighbor_node: Nod
 
 
 @post_clear_cache
+def a_star_search_clear(start: str, end: str, start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion) -> Path:
+    return a_star_search(start, end, start_time, graph, optimization_criterion)
+
+
 def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimization_criterion: OptimizationCriterion) -> Path:
     if start not in graph.nodes or end not in graph.nodes:
         raise ValueError("Start or end stop does not exist in the graph.")
@@ -84,6 +88,7 @@ def a_star_search(start: str, end: str, start_time: time, graph: Graph, optimiza
             return generate_path(start, entry.path_taken, elapsed, entry.priority)
 
         current_node: Node = graph.nodes[entry.current_stop_name]
+        for connection in graph.adjacency_list[start_name]:
         for (start_name, end_name), steps in graph.edges.items():
             if start_name != entry.current_stop_name:
                 continue

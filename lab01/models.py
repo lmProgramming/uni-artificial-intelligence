@@ -72,7 +72,16 @@ class Graph:
         self.edges: dict[tuple[str, str],
                          set[CommunicationStep]] = defaultdict(set)
         self.adjacency_list: dict[str,
-                                  set[CommunicationStep]] = defaultdict(set)
+                                  list[CommunicationStep]] = defaultdict(set)
+
+    def add_edge(self, start: str, end: str, step: CommunicationStep) -> None:
+        self.edges[(start, end)].add(step)
+        self.adjacency_list[start].append(step)
+
+    def sort_adjacency_list(self) -> None:
+        for node, steps in self.adjacency_list.items():
+            self.adjacency_list[node] = sorted(
+                steps, key=lambda step: step.departure_time)
 
 
 @dataclass

@@ -8,31 +8,18 @@ from models import Graph, Path, OptimizationCriterion
 from graph_provider import load_from_pickle_fallback_csv
 
 
-def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriterion, start_time: time) -> None:
+def algorithm_a_to_b(a: str, b: str, optimization_criterion: OptimizationCriterion, start_time: time, use_dijkstra=False) -> None:
     path: Path
 
-    try:
+    if use_dijkstra:
         print("Dijkstra")
         path = dijkstra(a, b, start_time, graph)
         path.pretty_print()
-    except TypeError as e:
-        print(e)
-
-    try:
+    else:
         print("Start A*")
         path = a_star_search(a, b, start_time, graph,
-                             OptimizationCriterion.TIME)
+                                optimization_criterion)
         path.pretty_print()
-    except TypeError as e:
-        print(e)
-
-    try:
-        print("Start A* 2")
-        path = a_star_search(a, b, start_time, graph,
-                             OptimizationCriterion.TRANSFERS)
-        path.pretty_print()
-    except TypeError as e:
-        print(e)
 
 
 def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time) -> None:
@@ -40,22 +27,22 @@ def algorithm_a_through_stops(a, stops, optimization_criterion, start_time: time
 
     print("Tabu")
     path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME,
-                       sampling_strategy=RandomSamplingStrategy(3))
+                       sampling_strategy=RandomSamplingStrategy(9))
     path.pretty_print()
 
     print("Tabu 2")
     path = tabu_search(a, stops, start_time, graph,
-                       OptimizationCriterion.TRANSFERS, sampling_strategy=RandomSamplingStrategy(3))
+                       OptimizationCriterion.TRANSFERS, sampling_strategy=RandomSamplingStrategy(9))
     path.pretty_print()
 
     print("Tabu 3")
     path = tabu_search(a, stops, start_time, graph, OptimizationCriterion.TIME,
-                       tabu_size_strategy=DynamicTabuSizeStrategy(k=5.0, min_size=10), sampling_strategy=RandomSamplingStrategy(3))
+                       tabu_size_strategy=DynamicTabuSizeStrategy(k=5.0, min_size=10), sampling_strategy=RandomSamplingStrategy(9))
     path.pretty_print()
 
     print("Tabu 4")
     path = tabu_search(a, stops, start_time, graph,
-                       OptimizationCriterion.TRANSFERS, tabu_size_strategy=FixedTabuSizeStrategy(sys.maxsize), sampling_strategy=RandomSamplingStrategy(3))
+                       OptimizationCriterion.TRANSFERS, tabu_size_strategy=FixedTabuSizeStrategy(sys.maxsize), sampling_strategy=RandomSamplingStrategy(9))
     path.pretty_print()
 
 
@@ -76,20 +63,7 @@ if __name__ == "__main__":
     optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
 
     # algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
-    # algorithm_a_to_b(a, "pl. Orląt Lwowskich",
-    #                 optimization_criterion, start_time_obj)
-    # algorithm_a_to_b("pl. Orląt Lwowskich", b,
-    #                 optimization_criterion, start_time_obj)
 
-    '''
-    Babimojska
-    Dworzec Świebodzki
-    Brücknera
-    C.H. Korona
-    Strachowicka
-    MULICKA
-    Bujwida
-    FAT'''
     stops: list[str] = ["Babimojska", "Dworzec Świebodzki", "Brücknera",
                         "C.H. Korona", "Strachowicka", "MULICKA", "Bujwida", "FAT"]
     stops2: list[str] = ["C.H. Korona", "FAT"]

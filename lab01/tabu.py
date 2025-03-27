@@ -10,6 +10,7 @@ from tabu_strategies import AspirationStrategy, AllowTabuAspirationStrategy, Str
 import heapq
 from collections import deque
 from geopy.distance import geodesic
+from concurrent.futures import ThreadPoolExecutor
 
 
 @lru_cache(maxsize=None)
@@ -106,20 +107,29 @@ def tabu_search(start: str, required_stops: list[str], start_time: time, graph: 
         swaps: list[tuple[int, int]] = sampling_strategy.generate_swaps(
             len(required_stops))
 
-        for i, j in swaps:
-            new_route: list[str] = current_route.copy()
-            new_route[i], new_route[j] = new_route[j], new_route[i]
-            route_tuple: tuple[str, ...] = tuple(new_route)
+        with ThreadPoolExecutor() as executor:
+            futures = []
+            for i, j in swaps:
+                new_route: list[str] = current_route.copy()
+                new_route[i], new_route[j] = new_route[j], new_route[i]
+                route_tuple: tuple[str, ...] = tuple(new_route)
 
-            if not aspiration_strategy.allow_route(tabu_set, route_tuple):
-                continue
+                if not aspiration_strategy.allow_route(tabu_set, route_tuple):
+                    continue
 
-            cost, steps = calculate_total_cost_and_steps(
-                new_route, start_time, graph, optimization_criterion)
+                futures.append(executor.submit(
+                    calculate_total_cost_and_steps, new_route, start_time, graph, optimization_criterion
+                ))
 
-            if (route_tuple not in tabu_set) or (cost < best_cost):
-                heapq.heappush(neighborhood, TabuSolution(
-                    cost, new_route, steps))
+            for future, (i, j) in zip(futures, swaps):
+                cost, steps = future.result()
+                new_route = current_route.copy()
+                new_route[i], new_route[j] = new_route[j], new_route[i]
+                route_tuple = tuple(new_route)
+
+                if (route_tuple not in tabu_set) or (cost < best_cost * 0.99):
+                    heapq.heappush(neighborhood, TabuSolution(
+                        cost, new_route, steps))
 
         if not neighborhood:
             break
