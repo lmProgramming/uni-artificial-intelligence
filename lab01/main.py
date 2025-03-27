@@ -48,22 +48,23 @@ if __name__ == "__main__":
         start_time_obj: time = datetime.strptime(start_time, "%H:%M:%S").time()
         optimization_criterion: OptimizationCriterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
 
-        algorithm_a_to_b(a, b, optimization_criterion, start_time_obj)
+        algorithm_a_to_b(a, b, optimization_criterion,
+                         start_time_obj, use_dijkstra=False)
     else:
         a = input("podaj przystanek początkowy A: ")
-        optimization_criterion_str = input(
-            "podaj kryterium optymalizacyjne: wartość t oznacza minimalizację czasu dojazdu, wartość p oznacza minimalizację liczby zmian linii: ")
-        start_time = input(
-            "czas pojawienia się na przystanku początkowym: ")
 
         stops: list[str] = []
-
         while True:
             stop: str = input(
                 "podaj przystanek lub wciśnij enter aby zakończyć: ")
             if stop == "" or stop == "\n":
                 break
             stops.append(stop)
+
+        optimization_criterion_str = input(
+            "podaj kryterium optymalizacyjne: wartość t oznacza minimalizację czasu dojazdu, wartość p oznacza minimalizację liczby zmian linii: ")
+        start_time = input(
+            "czas pojawienia się na przystanku początkowym: ")
 
         start_time_obj = datetime.strptime(start_time, "%H:%M:%S").time()
         optimization_criterion = OptimizationCriterion.TIME if optimization_criterion_str == "t" else OptimizationCriterion.TRANSFERS
