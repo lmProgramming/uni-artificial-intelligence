@@ -35,8 +35,9 @@ def dijkstra(start: str, end: str, start_time: time, graph: Graph) -> Path:
 
     queue: list[QueueEntry] = []
     counter = count()
-    heapq.heappush(queue, QueueEntry(0, next(counter),
-                   start_node.name, [], start_time_sec))
+    heapq.heappush(
+        queue, QueueEntry(0, next(counter), start_node.name, [], start_time_sec)
+    )
 
     visited: set[str] = set()
 
@@ -52,8 +53,7 @@ def dijkstra(start: str, end: str, start_time: time, graph: Graph) -> Path:
         if entry.current_stop_name == end_node.name:
             elapsed: float = t.perf_counter() - start_time_perf
 
-            path: Path = generate_path(
-                start, entry.path_taken, elapsed, entry.priority)
+            path: Path = generate_path(start, entry.path_taken, elapsed, entry.priority)
 
             return path
 
@@ -75,7 +75,7 @@ def dijkstra(start: str, end: str, start_time: time, graph: Graph) -> Path:
                         next(counter),
                         end_name,
                         entry.path_taken + [step],
-                        arrival_seconds
+                        arrival_seconds,
                     )
                     heapq.heappush(queue, new_queue_entry)
 

@@ -30,17 +30,26 @@ def load_from_csv() -> Graph:
 
     df: pd.DataFrame
     if os.path.exists(f"data/{csv_filename}.csv"):
-        df = pd.read_csv(f"data/{csv_filename}.csv", encoding="utf-8",
-                         sep=separator, skipfooter=skipfooter, engine="python")
+        df = pd.read_csv(
+            f"data/{csv_filename}.csv",
+            encoding="utf-8",
+            sep=separator,
+            skipfooter=skipfooter,
+            engine="python",
+        )
     else:
-        df = pd.read_csv(f"lab01/data/{csv_filename}.csv", encoding="utf-8",
-                         sep=separator, skipfooter=skipfooter, engine="python")
+        df = pd.read_csv(
+            f"lab01/data/{csv_filename}.csv",
+            encoding="utf-8",
+            sep=separator,
+            skipfooter=skipfooter,
+            engine="python",
+        )
 
     graph = Graph()
 
     for _, row in df.iterrows():
-        step: CommunicationStep = CommunicationStep.from_parsed_csv_line(
-            list(row))
+        step: CommunicationStep = CommunicationStep.from_parsed_csv_line(list(row))
 
         for stop in [step.start_stop, step.end_stop]:
             if stop.name not in graph.nodes:

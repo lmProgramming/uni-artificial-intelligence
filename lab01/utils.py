@@ -14,7 +14,8 @@ def seconds_to_time(s: int) -> time:
 
 def convert_to_24_hour_time(time_to_normalize: str) -> time:
     match: re.Match[str] | None = re.match(
-        r"(\d{2}):(\d{2}):(\d{2})", time_to_normalize)
+        r"(\d{2}):(\d{2}):(\d{2})", time_to_normalize
+    )
     if not match:
         raise ValueError(f"Invalid time format: {time_to_normalize}")
 
