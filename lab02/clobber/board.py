@@ -1,5 +1,9 @@
+from piece_type import piece_type
+from typing import cast
+
+
 class Board:
-    def __init__(self, n: int, m: int, state: list[str]) -> None:
+    def __init__(self, n: int, m: int, state: list[piece_type]) -> None:
         self.n: int = n
         self.m: int = m
         self.state: list[str] = state
@@ -26,3 +30,29 @@ class Board:
             result.append(self.state[y])
 
         return "\n".join(result)
+
+    def get_neighbours_positions_filtered(self, position: tuple[int, int], piece_filter: piece_type) -> list[tuple[int, int]]:
+        x, y = position
+
+        neighbours_positions: list[tuple[int, int]] = []
+
+        positions: list[tuple[int, int]] = [
+            (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+        for position in positions:
+            piece: piece_type = self.get_piece_at(position)
+            if piece != piece_filter:
+                continue
+
+            neighbours_positions.append(position)
+
+        return neighbours_positions
+
+    def get_piece_at(self, position: tuple[int, int]) -> piece_type:
+        x, y = position
+        if x < 0 or y < 0 or y >= self.n or x >= self.m:
+            return 'outside'
+        piece = self.state[y][x * 2]
+        return cast(piece_type, piece)
+
+    # def generate_moves(self, for_white: bool) -> None:
+    #    for y in range(self.n):

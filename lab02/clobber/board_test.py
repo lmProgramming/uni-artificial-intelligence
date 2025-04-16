@@ -11,3 +11,18 @@ def test_board_generation(dimensions: tuple[int, int], expected: str) -> None:
     board: Board = Board.initialize_board(*dimensions)
 
     assert str(board) == expected
+
+
+def test_neighbours() -> None:
+    board: Board = Board.initialize_board(5, 6)
+
+    black_neighbours: list[tuple[int, int]
+                           ] = board.get_neighbours_positions_filtered((1, 1), 'B')
+    assert (0, 1) in black_neighbours
+    assert (2, 1) in black_neighbours
+    assert (1, 2) in black_neighbours
+    assert (1, 0) in black_neighbours
+    assert len(black_neighbours) == 4
+    white_neighbours: list[tuple[int, int]
+                           ] = board.get_neighbours_positions_filtered((1, 1), 'W')
+    assert len(white_neighbours) == 0
