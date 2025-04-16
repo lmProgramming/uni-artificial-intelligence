@@ -26,6 +26,9 @@ class Board:
         board = Board(n, m, state)
         return board
 
+    def copy(self) -> "Board":
+        return Board(self.n, self.m, [row[:] for row in self.state])
+
     def __str__(self) -> str:
         result = []
         for y in range(self.n):
