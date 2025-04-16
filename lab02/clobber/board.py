@@ -1,4 +1,4 @@
-from piece_type import piece_type
+from .piece_type import piece_type
 from typing import cast
 
 
