@@ -3,8 +3,10 @@ from typing import cast
 
 
 class Board:
-    def __init__(self, n: int, m: int, state: list[piece_type]) -> None:
+    def __init__(self, n: int, m: int, state: list[str]) -> None:
+        # height
         self.n: int = n
+        # width
         self.m: int = m
         self.state: list[str] = state
 
@@ -51,8 +53,26 @@ class Board:
         x, y = position
         if x < 0 or y < 0 or y >= self.n or x >= self.m:
             return 'outside'
-        piece = self.state[y][x * 2]
+        piece: str = self.state[y][x * 2]
         return cast(piece_type, piece)
 
-    # def generate_moves(self, for_white: bool) -> None:
-    #    for y in range(self.n):
+    def generate_moves(self, for_white: bool) -> dict[tuple[int, int], list[tuple[int, int]]]:
+        opponent: piece_type = 'B' if for_white else 'W'
+        current_piece: piece_type = 'W' if for_white else 'B'
+
+        possible_moves = {}
+
+        for y in range(self.n):
+            for x in range(self.m):
+                if self.get_piece_at((x, y)) != current_piece:
+                    continue
+
+                neighbouring_opponents: list[tuple[int, int]] = self.get_neighbours_positions_filtered(
+                    (x, y), opponent)
+
+                if not neighbouring_opponents:
+                    continue
+
+                possible_moves[(x, y)] = neighbouring_opponents
+
+        return possible_moves
