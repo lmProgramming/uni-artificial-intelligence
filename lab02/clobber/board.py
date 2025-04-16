@@ -1,4 +1,4 @@
-from .piece_type import piece_type
+from clobber.piece_type import piece_type
 from typing import cast
 
 
@@ -33,6 +33,13 @@ class Board:
 
         return "\n".join(result)
 
+    def pretty(self) -> str:
+        result: list[str] = ["  " + " ".join(map(str, range(self.m)))]
+        for y in range(self.n):
+            result.append(str(y) + " " + str(self.state[y]))
+
+        return "\n".join(result)
+
     def get_neighbours_positions_filtered(self, position: tuple[int, int], piece_filter: piece_type) -> list[tuple[int, int]]:
         x, y = position
 
@@ -56,6 +63,19 @@ class Board:
         piece: str = self.state[y][x * 2]
         return cast(piece_type, piece)
 
+    def replace_piece_at(self, position: tuple[int, int], new_piece: piece_type) -> piece_type:
+        x, y = position
+        if x < 0 or y < 0 or y >= self.n or x >= self.m:
+            return 'outside'
+        str_index: int = x * 2
+        self.state[y] = self.state[y][0:str_index] + \
+            new_piece + self.state[y][str_index + 1:]
+        return new_piece
+
+    def move_assuming_correct(self, new_color: piece_type, position_from: tuple[int, int], position_to: tuple[int, int]) -> None:
+        self.replace_piece_at(position_from, '_')
+        self.replace_piece_at(position_to, new_color)
+
     def generate_moves(self, for_white: bool) -> dict[tuple[int, int], list[tuple[int, int]]]:
         opponent: piece_type = 'B' if for_white else 'W'
         current_piece: piece_type = 'W' if for_white else 'B'
@@ -76,3 +96,6 @@ class Board:
                 possible_moves[(x, y)] = neighbouring_opponents
 
         return possible_moves
+
+    def has_moves(self, white: bool) -> bool:
+        return len(self.generate_moves(white)) > 0

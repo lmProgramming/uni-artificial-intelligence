@@ -1,4 +1,4 @@
-from board import Board
+from clobber.board import Board
 import pytest
 
 
@@ -44,3 +44,28 @@ def test_generate_moves() -> None:
 
     assert moves[(0, 0)] == [(1, 0), (0, 1)]
     assert moves[(1, 1)] == [(0, 1), (1, 0)]
+
+
+def test_replace_piece() -> None:
+    board: Board = Board.initialize_board(2, 2)
+
+    board.replace_piece_at((0, 0), '_')
+    assert board.get_piece_at((0, 0)) == '_'
+
+    board.replace_piece_at((1, 1), '_')
+    assert board.get_piece_at((1, 1)) == '_'
+
+    board.replace_piece_at((0, 0), 'B')
+    assert board.get_piece_at((0, 0)) == 'B'
+
+    board.replace_piece_at((1, 0), 'B')
+    assert board.get_piece_at((1, 0)) == 'B'
+
+
+def test_move() -> None:
+    board: Board = Board.initialize_board(5, 6)
+
+    board.move_assuming_correct('W', (0, 0), (1, 0))
+
+    assert board.get_piece_at((0, 0)) == '_'
+    assert board.get_piece_at((1, 0)) == 'W'
