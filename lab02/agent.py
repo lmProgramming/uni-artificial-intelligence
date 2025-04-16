@@ -15,7 +15,8 @@ class Human(Agent):
         self.opponent_color: piece_type = "B" if color == "W" else "W"
 
     def generate_move(self, board: Board) -> tuple[tuple[int, int], tuple[int, int]]:
-        print(board)
+        print(board.pretty())
+        print(f"your move, {self.color}")
         while True:
             x = int(input("piece start position x: "))
             y = int(input("piece start position y: "))
@@ -31,10 +32,6 @@ class Human(Agent):
             x2 = int(input("piece end position x: "))
             y2 = int(input("piece end position y: "))
 
-            print(self.color)
-            print(self.opponent_color)
-            print(board.get_neighbours_positions_filtered(
-                (x, y), self.opponent_color))
             if (x2, y2) not in board.get_neighbours_positions_filtered((x, y), self.opponent_color):
                 print("illegal move!")
                 continue
