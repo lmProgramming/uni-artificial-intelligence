@@ -4,9 +4,9 @@ from clobber.board import Board
 
 
 def main() -> None:
-    white: Agent = MiniMax('W', Dumb(), 1)
-    black: Agent = MiniMax('B', Dumb(), 1)
-    board: Board = Board.initialize_board(10, 10)
+    white: Agent = AlphaBeta('W', Random(), 3)
+    black: Agent = AlphaBeta('B', Random(), 3)
+    board: Board = Board.initialize_board(6, 6)
 
     current_color: piece_type = 'W'
     while True:
@@ -17,7 +17,6 @@ def main() -> None:
         print(board.pretty())
 
         if not board.has_moves(current_color != 'W'):
-            print(board.pretty())
             print(current_color + " won this game!")
             return
 
