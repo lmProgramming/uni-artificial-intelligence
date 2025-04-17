@@ -80,13 +80,19 @@ class Board:
             new_piece + self.state[y][str_index + 1:]
         return new_piece
 
-    def move_assuming_correct(self, new_color: piece_type, move: move) -> None:
+    def make_move(self, new_color: piece_type, move: move) -> None:
         position_from, position_to = move
         if self.get_piece_at(position_from) != new_color:
             raise Exception("wrong")
         self.replace_piece_at(position_from, '_')
         if self.get_piece_at(position_to) != ("B" if new_color == 'W' else 'W'):
             raise Exception("wrong")
+        self.replace_piece_at(position_to, new_color)
+        self.turn += 1
+
+    def move_assuming_correct(self, new_color: piece_type, move: move) -> None:
+        position_from, position_to = move
+        self.replace_piece_at(position_from, '_')
         self.replace_piece_at(position_to, new_color)
         self.turn += 1
 
