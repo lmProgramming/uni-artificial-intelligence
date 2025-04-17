@@ -1,7 +1,5 @@
-import random
-from typing import Optional
 from clobber.board import Board
-from clobber.types import piece_type, move
+from clobber.types import piece_type
 
 
 def get_subgames(board: Board) -> list[list[tuple[tuple[int, int], piece_type]]]:

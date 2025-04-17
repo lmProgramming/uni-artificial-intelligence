@@ -1,5 +1,6 @@
-from clobber.board import Board
 import pytest
+
+from clobber.board import Board
 
 
 @pytest.mark.parametrize(("dimensions", "expected"),

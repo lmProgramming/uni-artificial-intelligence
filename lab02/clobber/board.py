@@ -1,5 +1,6 @@
-from clobber.types import piece_type, move
 from typing import Callable, cast
+
+from clobber.types import piece_type, move
 
 
 class Board:
