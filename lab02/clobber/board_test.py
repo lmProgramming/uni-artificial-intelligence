@@ -5,8 +5,8 @@ from clobber.board import Board
 
 @pytest.mark.parametrize(("dimensions", "expected"),
                          [
-    ((5, 6), "W_B_W_B_W_B\nB_W_B_W_B_W\nW_B_W_B_W_B\nB_W_B_W_B_W\nW_B_W_B_W_B"),
-    ((10, 10), "W_B_W_B_W_B_W_B_W_B\nB_W_B_W_B_W_B_W_B_W\nW_B_W_B_W_B_W_B_W_B\nB_W_B_W_B_W_B_W_B_W\nW_B_W_B_W_B_W_B_W_B\nB_W_B_W_B_W_B_W_B_W\nW_B_W_B_W_B_W_B_W_B\nB_W_B_W_B_W_B_W_B_W\nW_B_W_B_W_B_W_B_W_B\nB_W_B_W_B_W_B_W_B_W")
+    ((5, 6), "W B W B W B\nB W B W B W\nW B W B W B\nB W B W B W\nW B W B W B"),
+    ((10, 10), "W B W B W B W B W B\nB W B W B W B W B W\nW B W B W B W B W B\nB W B W B W B W B W\nW B W B W B W B W B\nB W B W B W B W B W\nW B W B W B W B W B\nB W B W B W B W B W\nW B W B W B W B W B\nB W B W B W B W B W")
 ])
 def test_board_generation(dimensions: tuple[int, int], expected: str) -> None:
     board: Board = Board.initialize_board(*dimensions)
