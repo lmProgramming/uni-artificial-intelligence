@@ -17,14 +17,14 @@ def test_neighbours() -> None:
     board: Board = Board.initialize_board(5, 6)
 
     black_neighbours: list[tuple[int, int]
-                           ] = board.get_neighbours_positions_filtered((1, 1), 'B')
+                           ] = board.get_neighbours_positions_filtered((1, 1), lambda p: p == 'B')
     assert (0, 1) in black_neighbours
     assert (2, 1) in black_neighbours
     assert (1, 2) in black_neighbours
     assert (1, 0) in black_neighbours
     assert len(black_neighbours) == 4
     white_neighbours: list[tuple[int, int]
-                           ] = board.get_neighbours_positions_filtered((1, 1), 'W')
+                           ] = board.get_neighbours_positions_filtered((1, 1), lambda p: p == 'W')
     assert len(white_neighbours) == 0
 
 

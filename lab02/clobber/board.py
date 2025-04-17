@@ -1,5 +1,5 @@
 from clobber.piece_type import piece_type
-from typing import cast
+from typing import Callable, cast
 
 
 class Board:
@@ -43,7 +43,10 @@ class Board:
 
         return "\n".join(result)
 
-    def get_neighbours_positions_filtered(self, position: tuple[int, int], piece_filter: piece_type) -> list[tuple[int, int]]:
+    def get_neighbours_positions(self, position: tuple[int, int]) -> list[tuple[int, int]]:
+        return self.get_neighbours_positions_filtered(position, lambda piece_type: piece_type in ["B", "W"])
+
+    def get_neighbours_positions_filtered(self, position: tuple[int, int], piece_filter: Callable[[piece_type], bool]) -> list[tuple[int, int]]:
         x, y = position
 
         neighbours_positions: list[tuple[int, int]] = []
@@ -52,7 +55,7 @@ class Board:
             (x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
         for position in positions:
             piece: piece_type = self.get_piece_at(position)
-            if piece != piece_filter:
+            if not piece_filter(piece):
                 continue
 
             neighbours_positions.append(position)
@@ -91,7 +94,7 @@ class Board:
                     continue
 
                 neighbouring_opponents: list[tuple[int, int]] = self.get_neighbours_positions_filtered(
-                    (x, y), opponent)
+                    (x, y), lambda piece_type: piece_type == opponent)
 
                 if not neighbouring_opponents:
                     continue
