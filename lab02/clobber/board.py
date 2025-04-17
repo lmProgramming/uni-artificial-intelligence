@@ -23,7 +23,7 @@ class Board:
                 line.append("W" if white else "B")
                 white = not white
 
-            state.append("_".join(line))
+            state.append(" ".join(line))
 
         board = Board(n, m, state)
         return board

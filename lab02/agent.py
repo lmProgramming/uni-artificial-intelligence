@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import time
 
 from clobber.board import Board
 from clobber.types import piece_type, move
@@ -10,10 +11,27 @@ class Agent(ABC):
     def __init__(self, color: piece_type) -> None:
         self.color: piece_type = color
         self.opponent_color: piece_type = "B" if color == "W" else "W"
+        self.total_time: float = 0
+        self._total_nodes: float = 0
+
+    @staticmethod
+    def add_total_time(func):
+        def wrapper(self, *args, **kwargs):
+            start = time.time()
+            result = func(self, *args, **kwargs)
+            end = time.time()
+            self.total_time += end - start
+            return result
+        return wrapper
 
     @abstractmethod
+    @add_total_time
     def generate_move(self, board: Board) -> move:
         ...
+
+    @property
+    def get_total_nodes(self):
+        return self._total_nodes
 
 
 class Human(Agent):
@@ -55,6 +73,8 @@ class MiniMax(Agent):
         self.max_depth: int = max_depth
 
     def minimax(self, board: Board, depth, is_maximizing) -> float:
+        self._total_nodes += 1
+
         if depth >= self.max_depth:
             return self.heuristic.calculate(board, is_maximizing)
 
@@ -82,6 +102,7 @@ class MiniMax(Agent):
 
         return best_score
 
+    @Agent.add_total_time
     def generate_move(self, board: Board) -> move:
         if self.color == 'W':
             best_score: float = float("-inf")
@@ -123,6 +144,8 @@ class AlphaBeta(Agent):
         self.max_depth: int = max_depth
 
     def minimax(self, board: Board, depth, is_maximizing: bool, alpha: float, beta: float) -> float:
+        self._total_nodes += 1
+
         if depth >= self.max_depth:
             return self.heuristic.calculate(board, is_maximizing)
 
@@ -160,8 +183,8 @@ class AlphaBeta(Agent):
 
         return best_score
 
+    @Agent.add_total_time
     def generate_move(self, board: Board) -> move:
-        print(self.color)
         if self.color == 'W':
             best_score: float = float("-inf")
             best_move: move
@@ -212,6 +235,7 @@ class Dynamic(Agent):
         self.rules: list[MinTurnRule] = rules
         self.agent = AlphaBeta(color, rules[0].heuristic, rules[0].max_depth)
 
+    @Agent.add_total_time
     def generate_move(self, board) -> move:
         current_turn: int = board.turn
         index = 0
@@ -224,3 +248,7 @@ class Dynamic(Agent):
         self.agent.max_depth = self.rules[index].max_depth
 
         return self.agent.generate_move(board)
+
+    @property
+    def get_total_nodes(self) -> float:
+        return self.agent.get_total_nodes()
