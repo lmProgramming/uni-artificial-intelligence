@@ -1,4 +1,4 @@
-from clobber.piece_type import piece_type
+from clobber.types import piece_type, move
 from typing import Callable, cast
 
 
@@ -78,15 +78,27 @@ class Board:
             new_piece + self.state[y][str_index + 1:]
         return new_piece
 
-    def move_assuming_correct(self, new_color: piece_type, position_from: tuple[int, int], position_to: tuple[int, int]) -> None:
+    def move_assuming_correct(self, new_color: piece_type, move: move) -> None:
+        position_from, position_to = move
         self.replace_piece_at(position_from, '_')
         self.replace_piece_at(position_to, new_color)
+
+    def get_all_pieces(self, piece: piece_type) -> list[tuple[int, int]]:
+        positions: list[tuple[int, int]] = []
+        for y in range(self.n):
+            for x in range(self.m):
+                if self.get_piece_at((x, y)) != piece:
+                    continue
+
+                positions.append((x, y))
+
+        return positions
 
     def generate_moves(self, for_white: bool) -> dict[tuple[int, int], list[tuple[int, int]]]:
         opponent: piece_type = 'B' if for_white else 'W'
         current_piece: piece_type = 'W' if for_white else 'B'
 
-        possible_moves = {}
+        possible_moves: dict[tuple[int, int], list[tuple[int, int]]] = {}
 
         for y in range(self.n):
             for x in range(self.m):

@@ -1,19 +1,24 @@
 from agent import *
 from heuristics import *
 from clobber.board import Board
+from clobber.types import move
 
 
 def main() -> None:
-    white: Agent = AlphaBeta('W', Random(), 3)
-    black: Agent = AlphaBeta('B', Random(), 3)
-    board: Board = Board.initialize_board(6, 6)
+    white: Agent = AlphaBeta('W', LocalActivityHeuristic(), 3)
+    black: Agent = AlphaBeta('B', SubgameControlHeuristic(), 3)
+    board: Board = Board.initialize_board(5, 6)
+
+    print("board initialized")
+    print(board.pretty())
 
     current_color: piece_type = 'W'
     while True:
         current_player: Agent = white if current_color == 'W' else black
-        move_from, move_to = current_player.generate_move(board)
-        board.move_assuming_correct(current_color, move_from, move_to)
-        print(f"{current_color} moved from {move_from} to {move_to}")
+        chosen_move: move = current_player.generate_move(board)
+        board.move_assuming_correct(current_color, chosen_move)
+        print(
+            f"{current_color} moved from {chosen_move[0]} to {chosen_move[1]}")
         print(board.pretty())
 
         if not board.has_moves(current_color != 'W'):
