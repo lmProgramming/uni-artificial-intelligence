@@ -1,9 +1,7 @@
-from geopy.distance import geodesic
+from geopy.distance import geodesic  # type: ignore
 import models
 from functools import lru_cache
 from datetime import time
-from bisect import bisect_left
-from utils import seconds_to_time
 
 
 @lru_cache(maxsize=None)

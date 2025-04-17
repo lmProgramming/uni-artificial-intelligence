@@ -34,7 +34,7 @@ class Human(Agent):
                 x2 = int(input("piece end position x: "))
                 y2 = int(input("piece end position y: "))
 
-                if (x2, y2) not in board.get_neighbours_positions_filtered((x, y), self.opponent_color):
+                if (x2, y2) not in board.get_neighbours_positions_filtered((x, y), lambda p: p == self.opponent_color):
                     print(
                         f"illegal move! {x2},{y2} not in {x},{y} {self.opponent_color} neighbours")
                     continue
