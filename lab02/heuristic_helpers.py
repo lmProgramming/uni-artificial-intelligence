@@ -1,4 +1,3 @@
-from typing import Literal
 from clobber.board import Board
 from clobber.piece_type import piece_type
 
@@ -18,7 +17,8 @@ def get_subgames(board: Board) -> list[list[tuple[tuple[int, int], piece_type]]]
             start_point: tuple[int, int] = (r, c)
             piece: piece_type = board.get_piece_at(start_point)
             if piece != 0 and start_point not in visited:
-                current_subgame_points: list[tuple[tuple[int, int], piece_type]] = []
+                current_subgame_points: list[tuple[tuple[int, int], piece_type]] = [
+                ]
                 queue: list[tuple[int, int]] = [start_point]
                 visited.add(start_point)
                 has_black = False
