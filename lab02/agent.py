@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from clobber.board import Board
-from clobber.piece_type import piece_type
+from lab02.clobber.types import piece_type, move
 from heuristics import Heuristic
 
 
 class Agent(ABC):
     @abstractmethod
-    def generate_move(self, board: Board) -> tuple[tuple[int, int], tuple[int, int]]:
+    def generate_move(self, board: Board) -> tuple[move]:
         ...
 
 
@@ -15,7 +15,7 @@ class Human(Agent):
         self.color: piece_type = color
         self.opponent_color: piece_type = "B" if color == "W" else "W"
 
-    def generate_move(self, board: Board) -> tuple[tuple[int, int], tuple[int, int]]:
+    def generate_move(self, board: Board) -> tuple[move]:
         print(board.pretty())
         print(f"your move, {self.color}")
         while True:
@@ -80,10 +80,10 @@ class MiniMax(Agent):
 
         return best_score
 
-    def generate_move(self, board: Board) -> tuple[tuple[int, int], tuple[int, int]]:
+    def generate_move(self, board: Board) -> move:
         if self.color == 'W':
             best_score: float = float("-inf")
-            best_move: tuple[tuple[int, int], tuple[int, int]]
+            best_move: move
             for position_from, moves in board.generate_moves(True).items():
                 for position_to in moves:
                     new_board: Board = board.copy()
@@ -158,10 +158,10 @@ class AlphaBeta(Agent):
 
         return best_score
 
-    def generate_move(self, board: Board) -> tuple[tuple[int, int], tuple[int, int]]:
+    def generate_move(self, board: Board) -> move:
         if self.color == 'W':
             best_score: float = float("-inf")
-            best_move: tuple[tuple[int, int], tuple[int, int]]
+            best_move: move
             for position_from, moves in board.generate_moves(True).items():
                 for position_to in moves:
                     new_board: Board = board.copy()
