@@ -1,6 +1,8 @@
 asttokens==3.0.0
 colorama==0.4.6
 comm==0.2.2
+coverage==7.8.0
+Cython==3.0.12
 debugpy==1.8.14
 decorator==5.2.1
 executing==2.2.0
@@ -8,7 +10,7 @@ geographiclib==2.0
 geopy==2.4.1
 iniconfig==2.1.0
 ipykernel==6.29.5
-ipython>=8.35.0
+ipython
 ipython_pygments_lexers==1.1.1
 jedi==0.19.2
 jupyter_client==8.6.3
@@ -26,12 +28,15 @@ psutil==7.0.0
 pure_eval==0.2.3
 Pygments==2.19.1
 pytest==8.3.5
+pytest-cov==6.1.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
 pyzmq==26.4.0
+setuptools==78.1.0
 six==1.17.0
 stack-data==0.6.3
 tornado==6.4.2
 traitlets==5.14.3
+types-setuptools==78.1.0.20250329
 tzdata==2025.2
 wcwidth==0.2.13
