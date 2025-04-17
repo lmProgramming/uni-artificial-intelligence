@@ -1,8 +1,9 @@
 from _collections_abc import dict_items
+import random
 from abc import ABC, abstractmethod
+
 from clobber.board import Board
 from clobber.types import piece_type
-import random
 from heuristic_helpers import get_subgames
 
 

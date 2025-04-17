@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from clobber.board import Board
 from clobber.types import piece_type, move
 from heuristics import Heuristic
@@ -193,3 +194,9 @@ class AlphaBeta(Agent):
 
         print(f"black heuristic: {best_score}")
         return best_move
+
+
+class Dynamic(Agent):
+    def __init__(self, color: piece_type, strategy) -> None:
+        self.color = color
+        self.strategy = strategy

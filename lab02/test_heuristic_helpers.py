@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
+
 from clobber.board import Board
 from heuristic_helpers import get_subgames
 
