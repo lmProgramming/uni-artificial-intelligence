@@ -41,12 +41,12 @@ class MobilityHeuristic(Heuristic):
 
         # Count moves by summing lengths of possibilities lists from generate_moves
         my_moves_map: dict[tuple[int, int], list[tuple[int, int]]
-                           ] = board.generate_moves(for_white)
+                           ] = board.generate_moves(True)
         my_moves_count: int = sum(len(possibilities)
                                   for _, possibilities in my_moves_map.items())
 
         opponent_moves_map: dict[tuple[int, int],
-                                 list[tuple[int, int]]] = board.generate_moves(not for_white)
+                                 list[tuple[int, int]]] = board.generate_moves(False)
         opponent_moves_count: int = sum(len(possibilities)
                                         for _, possibilities in opponent_moves_map.items())
 

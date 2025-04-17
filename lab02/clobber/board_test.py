@@ -65,7 +65,45 @@ def test_replace_piece() -> None:
 def test_move() -> None:
     board: Board = Board.initialize_board(5, 6)
 
-    board.move_assuming_correct('W', (0, 0), (1, 0))
+    board.move_assuming_correct('W', ((0, 0), (1, 0)))
 
     assert board.get_piece_at((0, 0)) == '_'
     assert board.get_piece_at((1, 0)) == 'W'
+
+
+def test_get_all_pieces() -> None:
+    board: Board = Board.initialize_board(3, 3)
+
+    white_positions: list[tuple[int, int]] = board.get_all_pieces('W')
+    black_positions: list[tuple[int, int]] = board.get_all_pieces('B')
+
+    assert len(white_positions) == 5
+    assert len(black_positions) == 4
+    assert (0, 0) in white_positions
+    assert (1, 0) in black_positions
+
+
+def test_has_moves() -> None:
+    board: Board = Board.initialize_board(2, 2)
+
+    assert board.has_moves(True)
+    assert board.has_moves(False)
+
+    board.replace_piece_at((0, 0), '_')
+    board.replace_piece_at((1, 0), '_')
+    board.replace_piece_at((0, 1), '_')
+    board.replace_piece_at((1, 1), '_')
+
+    assert not board.has_moves(True)
+    assert not board.has_moves(False)
+
+
+def test_copy() -> None:
+    board: Board = Board.initialize_board(2, 2)
+    board_copy: Board = board.copy()
+
+    assert str(board) == str(board_copy)
+
+    board_copy.replace_piece_at((0, 0), '_')
+    assert board.get_piece_at((0, 0)) == 'W'
+    assert board_copy.get_piece_at((0, 0)) == '_'
