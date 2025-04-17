@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 from clobber.board import Board
 from clobber.types import piece_type, move
@@ -6,16 +7,16 @@ from heuristics import Heuristic
 
 
 class Agent(ABC):
+    def __init__(self, color: piece_type) -> None:
+        self.color: piece_type = color
+        self.opponent_color: piece_type = "B" if color == "W" else "W"
+
     @abstractmethod
     def generate_move(self, board: Board) -> move:
         ...
 
 
 class Human(Agent):
-    def __init__(self, color: piece_type) -> None:
-        self.color: piece_type = color
-        self.opponent_color: piece_type = "B" if color == "W" else "W"
-
     def generate_move(self, board: Board) -> move:
         print(board.pretty())
         print(f"your move, {self.color}")
@@ -48,8 +49,8 @@ class Human(Agent):
 
 class MiniMax(Agent):
     def __init__(self, color: piece_type, heuristic: Heuristic, max_depth: int = 10) -> None:
-        self.color: piece_type = color
-        self.opponent_color: piece_type = "B" if color == "W" else "W"
+        super().__init__(color)
+
         self.heuristic: Heuristic = heuristic
         self.max_depth: int = max_depth
 
@@ -116,8 +117,8 @@ class MiniMax(Agent):
 
 class AlphaBeta(Agent):
     def __init__(self, color: piece_type, heuristic: Heuristic, max_depth: int = 10) -> None:
-        self.color: piece_type = color
-        self.opponent_color: piece_type = "B" if color == "W" else "W"
+        super().__init__(color)
+
         self.heuristic: Heuristic = heuristic
         self.max_depth: int = max_depth
 
@@ -160,6 +161,7 @@ class AlphaBeta(Agent):
         return best_score
 
     def generate_move(self, board: Board) -> move:
+        print(self.color)
         if self.color == 'W':
             best_score: float = float("-inf")
             best_move: move
@@ -196,7 +198,29 @@ class AlphaBeta(Agent):
         return best_move
 
 
+@dataclass(frozen=True)
+class MinTurnRule():
+    min_turn: int
+    heuristic: Heuristic
+    max_depth: int
+
+
 class Dynamic(Agent):
-    def __init__(self, color: piece_type, strategy) -> None:
-        self.color = color
-        self.strategy = strategy
+    def __init__(self, color: piece_type, rules: list[MinTurnRule]) -> None:
+        super().__init__(color)
+
+        self.rules: list[MinTurnRule] = rules
+        self.agent = AlphaBeta(color, rules[0].heuristic, rules[0].max_depth)
+
+    def generate_move(self, board) -> move:
+        current_turn: int = board.turn
+        index = 0
+        for rule in self.rules[1:]:
+            if rule.min_turn > current_turn:
+                break
+            index += 1
+
+        self.agent.heuristic = self.rules[index].heuristic
+        self.agent.max_depth = self.rules[index].max_depth
+
+        return self.agent.generate_move(board)

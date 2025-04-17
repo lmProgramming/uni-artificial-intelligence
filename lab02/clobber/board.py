@@ -4,12 +4,13 @@ from clobber.types import piece_type, move
 
 
 class Board:
-    def __init__(self, n: int, m: int, state: list[str]) -> None:
+    def __init__(self, n: int, m: int, state: list[str], turn: int = 0) -> None:
         # height
         self.n: int = n
         # width
         self.m: int = m
         self.state: list[str] = state
+        self.turn: int = turn
 
     @staticmethod
     def initialize_board(n: int, m: int) -> "Board":
@@ -28,7 +29,7 @@ class Board:
         return board
 
     def copy(self) -> "Board":
-        return Board(self.n, self.m, [row[:] for row in self.state])
+        return Board(self.n, self.m, [row[:] for row in self.state], self.turn)
 
     def __str__(self) -> str:
         result = []
@@ -81,8 +82,13 @@ class Board:
 
     def move_assuming_correct(self, new_color: piece_type, move: move) -> None:
         position_from, position_to = move
+        if self.get_piece_at(position_from) != new_color:
+            raise Exception("wrong")
         self.replace_piece_at(position_from, '_')
+        if self.get_piece_at(position_to) != ("B" if new_color == 'W' else 'W'):
+            raise Exception("wrong")
         self.replace_piece_at(position_to, new_color)
+        self.turn += 1
 
     def get_all_pieces(self, piece: piece_type) -> list[tuple[int, int]]:
         positions: list[tuple[int, int]] = []

@@ -5,7 +5,9 @@ from clobber.types import move
 
 
 def main() -> None:
-    white: Agent = AlphaBeta('W', LocalActivityHeuristic(), 3)
+    rules: list[MinTurnRule] = [MinTurnRule(0, Random(), 1), MinTurnRule(
+        10, SubgameControlHeuristic(), 10), MinTurnRule(20, LocalActivityHeuristic(), 10)]
+    white: Agent = Dynamic('W', rules)
     black: Agent = AlphaBeta('B', SubgameControlHeuristic(), 3)
     board: Board = Board.initialize_board(5, 6)
 

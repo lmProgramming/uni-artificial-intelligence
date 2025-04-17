@@ -108,3 +108,16 @@ def test_copy() -> None:
     board_copy.replace_piece_at((0, 0), '_')
     assert board.get_piece_at((0, 0)) == 'W'
     assert board_copy.get_piece_at((0, 0)) == '_'
+
+
+def test_turn() -> None:
+    board: Board = Board.initialize_board(5, 5)
+
+    assert board.turn == 0
+    board.move_assuming_correct('W', ((0, 0), (0, 1)))
+    assert board.turn == 1
+    new_board: Board = board.copy()
+    assert new_board.turn == 1
+    board.move_assuming_correct('W', ((0, 1), (1, 0)))
+    assert new_board.turn == 1
+    assert board.turn == 2
