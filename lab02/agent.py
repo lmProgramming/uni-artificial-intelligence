@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from clobber.board import Board
-from lab02.clobber.types import piece_type, move
+from clobber.types import piece_type, move
 from heuristics import Heuristic
 
 
 class Agent(ABC):
     @abstractmethod
-    def generate_move(self, board: Board) -> tuple[move]:
+    def generate_move(self, board: Board) -> move:
         ...
 
 
@@ -15,7 +15,7 @@ class Human(Agent):
         self.color: piece_type = color
         self.opponent_color: piece_type = "B" if color == "W" else "W"
 
-    def generate_move(self, board: Board) -> tuple[move]:
+    def generate_move(self, board: Board) -> move:
         print(board.pretty())
         print(f"your move, {self.color}")
         while True:
@@ -62,7 +62,7 @@ class MiniMax(Agent):
                 for position_to in moves:
                     new_board: Board = board.copy()
                     new_board.move_assuming_correct(
-                        'W', position_from, position_to)
+                        'W', (position_from, position_to))
 
                     score: float = self.minimax(new_board, depth + 1, False)
                     best_score = max(score, best_score)
@@ -73,7 +73,7 @@ class MiniMax(Agent):
             for position_to in moves:
                 new_board = board.copy()
                 new_board.move_assuming_correct(
-                    'B', position_from, position_to)
+                    'B', (position_from, position_to))
 
                 score = self.minimax(new_board, depth + 1, True)
                 best_score = min(score, best_score)
@@ -88,7 +88,7 @@ class MiniMax(Agent):
                 for position_to in moves:
                     new_board: Board = board.copy()
                     new_board.move_assuming_correct(
-                        'W', position_from, position_to)
+                        'W', (position_from, position_to))
 
                     score: float = self.minimax(new_board, 0, False)
                     if score >= best_score:
@@ -102,7 +102,7 @@ class MiniMax(Agent):
             for position_to in moves:
                 new_board = board.copy()
                 new_board.move_assuming_correct(
-                    'B', position_from, position_to)
+                    'B', (position_from, position_to))
 
                 score = self.minimax(new_board, 0, True)
                 if score <= best_score:
@@ -130,7 +130,7 @@ class AlphaBeta(Agent):
                 for position_to in moves:
                     new_board: Board = board.copy()
                     new_board.move_assuming_correct(
-                        'W', position_from, position_to)
+                        'W', (position_from, position_to))
 
                     score: float = self.minimax(
                         new_board, depth + 1, False, alpha, beta)
@@ -147,7 +147,7 @@ class AlphaBeta(Agent):
             for position_to in moves:
                 new_board = board.copy()
                 new_board.move_assuming_correct(
-                    'B', position_from, position_to)
+                    'B', (position_from, position_to))
 
                 score = self.minimax(new_board, depth + 1, True, alpha, beta)
                 best_score = min(score, best_score)
@@ -166,7 +166,7 @@ class AlphaBeta(Agent):
                 for position_to in moves:
                     new_board: Board = board.copy()
                     new_board.move_assuming_correct(
-                        'W', position_from, position_to)
+                        'W', (position_from, position_to))
 
                     score: float = self.minimax(
                         new_board, 0, False, float("-inf"), float("inf"))
@@ -174,6 +174,7 @@ class AlphaBeta(Agent):
                         best_score = score
                         best_move = (
                             position_from, position_to)
+            print(f"white heuristic: {best_score}")
             return best_move
 
         best_score = float("inf")
@@ -181,7 +182,7 @@ class AlphaBeta(Agent):
             for position_to in moves:
                 new_board = board.copy()
                 new_board.move_assuming_correct(
-                    'B', position_from, position_to)
+                    'B', (position_from, position_to))
 
                 score = self.minimax(new_board, 0, True,
                                      float("-inf"), float("inf"))
@@ -190,4 +191,5 @@ class AlphaBeta(Agent):
                     best_move = (
                         position_from, position_to)
 
+        print(f"black heuristic: {best_score}")
         return best_move
