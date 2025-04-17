@@ -15,49 +15,61 @@ class Heuristic(ABC):
 
 class Random(Heuristic):
     def calculate(self, board: Board, for_white: bool) -> float:
-        return random.randrange(-10000, 10000)
+        return random.uniform(-10000, 10000)
 
 
-class AvailableMoves(Heuristic):
-    def calculate(self, board: Board, for_white: bool) -> float:
-        moves_good: dict_items[tuple[int, int], list[tuple[int, int]]
-                               ] = board.generate_moves(for_white).items()
-
-        moves_bad: dict_items[tuple[int, int], list[tuple[int, int]]
-                              ] = board.generate_moves(not for_white).items()
-
-        return (sum(len(possibilites) for _, possibilites in moves_good) + sum(len(possibilites) for _, possibilites in moves_bad)) * (1 if for_white else -1)
-
-
-# --- Heuristic 1: Mobility Focus ---
-class MobilityHeuristic(Heuristic):
-    """
-    Evaluates board state based on the difference in the number of available moves.
-    Higher score = more moves for the player whose turn it is relative to opponent.
-    """
+class PieceSafetyHeuristic(Heuristic):
+    '''
+    Measures how many of your pieces can be captured by the opponent versus how many opponent pieces can be captured by you
+    '''
 
     def calculate(self, board: Board, for_white: bool) -> float:
         my_player: piece_type = 'W' if for_white else 'B'
         opponent_player: piece_type = 'B' if for_white else 'W'
 
-        # Count moves by summing lengths of possibilities lists from generate_moves
-        my_moves_map: dict[tuple[int, int], list[tuple[int, int]]
-                           ] = board.generate_moves(True)
-        my_moves_count: int = sum(len(possibilities)
-                                  for _, possibilities in my_moves_map.items())
+        my_pieces: list[tuple[int, int]] = board.get_all_pieces(my_player)
+        opponent_pieces: list[tuple[int, int]
+                              ] = board.get_all_pieces(opponent_player)
 
-        opponent_moves_map: dict[tuple[int, int],
-                                 list[tuple[int, int]]] = board.generate_moves(False)
-        opponent_moves_count: int = sum(len(possibilities)
-                                        for _, possibilities in opponent_moves_map.items())
+        my_vulnerable_count = 0
+        for my_pos in my_pieces:
+            my_vulnerable_count += 1 if board.get_neighbours_positions_filtered(
+                my_pos, lambda p: p == opponent_player) else 0
 
-        # Simple difference
-        score = float(my_moves_count - opponent_moves_count)
+        opponent_vulnerable_count = 0
+        for opp_pos in opponent_pieces:
+            opponent_vulnerable_count += 1 if board.get_neighbours_positions_filtered(
+                opp_pos, lambda p: p == my_player) else 0
 
-        # The heuristic interface doesn't specify *whose turn* it is, only who
-        # the score should favor. This calculates the mobility *advantage*
-        # for the player specified by `for_white`.
-        return score
+        score = float(opponent_vulnerable_count - my_vulnerable_count)
+        return score * (1 if for_white else -1)
+
+
+class CenterControlHeuristic(Heuristic):
+    '''
+    Heuristic assumes pieces should move towards center
+    '''
+
+    def calculate(self, board: Board, for_white: bool) -> float:
+        my_player: piece_type = 'W' if for_white else 'B'
+        opponent_player: piece_type = 'B' if for_white else 'W'
+
+        center_x: float = (board.m - 1) / 2.0
+        center_y: float = (board.n - 1) / 2.0
+
+        my_score = 0.0
+        for x, y in board.get_all_pieces(my_player):
+            dist_sq: float = (x - center_x)**2 + (y - center_y)**2
+            # Add small epsilon to avoid division by zero if piece is exactly center
+            my_score += 1.0 / (1.0 + dist_sq + 1e-6)
+
+        opponent_score = 0.0
+        for x, y in board.get_all_pieces(opponent_player):
+            dist_sq = (x - center_x)**2 + (y - center_y)**2
+            opponent_score += 1.0 / (1.0 + dist_sq + 1e-6)
+
+        score: float = my_score - opponent_score
+        return score * (1 if for_white else -1)
 
 
 class SubgameControlHeuristic(Heuristic):
@@ -74,35 +86,21 @@ class SubgameControlHeuristic(Heuristic):
         total_score = 0.0
 
         if not active_subgames:
-            # No active subgames - could be end game or fully separated.
-            # Check who has remaining moves. If only we do, score high. If only opponent, score low.
-            my_moves_map = board.generate_moves(for_white)
-            my_moves_count = sum(len(p) for _, p in my_moves_map.items())
-            opponent_moves_map = board.generate_moves(not for_white)
-            opponent_moves_count = sum(len(p)
-                                       for _, p in opponent_moves_map.items())
+            return 0.0
 
-            if my_moves_count > 0 and opponent_moves_count == 0:
-                return 10000.0  # High score, likely win
-            elif my_moves_count == 0 and opponent_moves_count > 0:
-                return -10000.0  # Low score, likely loss
-            else:
-                return 0.0  # Draw state or both have moves in isolated blocks
-
-        for sg in active_subgames:
+        for sub_game in active_subgames:
             my_pieces = 0
             opponent_pieces = 0
-            for _point, piece in sg:
+            for _, piece in sub_game:
                 if piece == my_player:
                     my_pieces += 1
                 elif piece == opponent_player:
                     opponent_pieces += 1
             total_score += (my_pieces - opponent_pieces)
 
-        return float(total_score)
+        return float(total_score) * (1 if for_white else -1)
 
 
-# --- Heuristic 3: Local Activity Focus ---
 class LocalActivityHeuristic(Heuristic):
     """
     Evaluates board state based on the number of opponent pieces adjacent
@@ -115,12 +113,11 @@ class LocalActivityHeuristic(Heuristic):
 
         total_activity_score = 0.0
         my_piece_positions: list[tuple[int, int]] = board.get_all_pieces(
-            my_player)  # Assumes this board method exists
+            my_player)
 
         for my_pos in my_piece_positions:
             adjacent_opponents: int = len(board.get_neighbours_positions_filtered(
                 my_pos, lambda p: p == opponent_player))
             total_activity_score += adjacent_opponents
 
-        # This score naturally favors the player `for_white`.
-        return float(total_activity_score)
+        return float(total_activity_score) * (1 if for_white else -1)
