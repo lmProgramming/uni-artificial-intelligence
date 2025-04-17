@@ -4,8 +4,17 @@
 
 ## running
 
-on Windows, you might need to additionally install
+On Windows, you might need to additionally install:
 
 ```sh
 pip install pywin32
+```
+
+### lab02
+
+To build cython files:
+
+```sh
+cd lab02
+python setup.py build_ext --inplace
 ```
