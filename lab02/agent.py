@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import logging
 import time
 
 from clobber.board import Board
@@ -200,7 +201,7 @@ class AlphaBeta(Agent):
                         best_score = score
                         best_move = (
                             position_from, position_to)
-            print(f"white heuristic: {best_score}")
+            logging.debug(f"white heuristic: {best_score}")
             return best_move
 
         best_score = float("inf")
@@ -217,7 +218,7 @@ class AlphaBeta(Agent):
                     best_move = (
                         position_from, position_to)
 
-        print(f"black heuristic: {best_score}")
+        logging.debug(f"black heuristic: {best_score}")
         return best_move
 
 

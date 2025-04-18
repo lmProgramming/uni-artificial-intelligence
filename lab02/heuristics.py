@@ -1,4 +1,3 @@
-from _collections_abc import dict_items
 import random
 from abc import ABC, abstractmethod
 
