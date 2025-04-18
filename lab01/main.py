@@ -1,5 +1,4 @@
 from datetime import datetime, time
-import sys
 from dijkstra import dijkstra
 from a_star import a_star_search
 from tabu import tabu_search
