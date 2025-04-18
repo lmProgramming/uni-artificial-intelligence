@@ -18,3 +18,10 @@ To build cython files:
 cd lab02
 python setup.py build_ext --inplace
 ```
+
+#### Windows
+
+I strongly recommend to make sure Python version has development options enabled
+(if not, best to reinstall with them enabled)
+
+VS XX C++ Desktop Development must also be installed
