@@ -28,10 +28,10 @@ def game(white: Agent, black: Agent, board: Board) -> piece_type:
             print(f"{board.turn} turns taken")
             print(f"{current_color} won this game!")
             print(
-                f"white: {white._total_nodes} nodes visited, {white.total_time} spent", file=sys.stderr,
+                f"white: {white.total_nodes} nodes visited, {white.total_time} spent", file=sys.stderr,
                 flush=True)
             print(
-                f"black: {black._total_nodes} nodes visited, {black.total_time} spent", file=sys.stderr,
+                f"black: {black.total_nodes} nodes visited, {black.total_time} spent", file=sys.stderr,
                 flush=True)
             return current_color
 
