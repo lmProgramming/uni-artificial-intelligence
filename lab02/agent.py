@@ -31,7 +31,7 @@ class Agent(ABC):
         ...
 
     @property
-    def get_total_nodes(self):
+    def total_nodes(self):
         return self._total_nodes
 
 
@@ -251,5 +251,5 @@ class Dynamic(Agent):
         return self.agent.generate_move(board)
 
     @property
-    def get_total_nodes(self) -> float:
-        return self.agent.get_total_nodes()
+    def total_nodes(self) -> float:
+        return self.agent.total_nodes
