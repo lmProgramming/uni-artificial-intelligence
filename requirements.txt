@@ -31,11 +31,13 @@ pytest==8.3.5
 pytest-cov==6.1.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
+pywin32==310
 pyzmq==26.4.0
 setuptools==78.1.0
 six==1.17.0
 stack-data==0.6.3
 tornado==6.4.2
+tqdm==4.67.1
 traitlets==5.14.3
 types-setuptools==78.1.0.20250329
 tzdata==2025.2
