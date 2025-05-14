@@ -79,7 +79,7 @@
 Celem niniejszego raportu jest przedstawienie rozwiązań trzech zadań z zakresu planowania z wykorzystaniem języka PDDL (Planning Domain Definition Language). Lista zadań miała na celu zapoznanie z podstawami języka PDDL, jego rozszerzeniami oraz praktycznym zastosowaniem w modelowaniu i rozwiązywaniu problemów planowania symbolicznego. W ramach zadań zaimplementowano modele dla problemu transportu paczek z rozszerzeniami, sprzątającego robota oraz przeanalizowano gotowy model robota przenoszącego piłki. Do testowania i generowania planów wykorzystano edytor online \url{https://editor.planning.domains}.
 
 \section{Zadanie 1: Transport paczek z rozszerzeniami}
-\subsection{Opis Problemu i Założenia Modelu}
+\subsection{Opis problemu i założenia modelu}
 Zadanie polegało na zaprojektowaniu, uruchomieniu i analizie planu transportu paczek. Celem było opracowanie modelu logicznego oraz wdrożenie go w formie plików PDDL, uwzględniając następujące rozszerzenia języka PDDL:
 \begin{itemize}
   \item \texttt{:strips} - podstawowy model operacji STRIPS,
@@ -225,7 +225,7 @@ Kluczowe predykaty obejmowały:
 (fragile ?p - package)
 \end{lstlisting}
 
-\subsubsection{Funkcje (Fluenty Numeryczne)}
+\subsubsection{Funkcje (fluenty numeryczne)}
 Zdefiniowano następujące fluenty numeryczne:
 \begin{lstlisting}[caption=Funkcje w domenie Zadania 1, label=lst:func_task1]
 (:functions
@@ -271,10 +271,8 @@ Przykładowa akcja \texttt{load-package} z efektem warunkowym oraz akcja \texttt
 )
 \end{lstlisting}
 
-\subsection{Definicja Problemu (\texttt{problem-task1.pddl})}
-Poniżej przedstawiono definicję problemu.
-
-\begin{lstlisting}[caption=Fragment obiektów w problemie Zadania 1, label=lst:obj_task1]
+\subsection{Definicja problemu (\texttt{problem-task1.pddl})}
+\begin{lstlisting}[caption=Definicja problemu zadania 1, label=lst:obj_task1]
 (define (problem multi-modal-transport-conditional)
   (:domain package-transport-step6)
 
@@ -341,16 +339,18 @@ Poniżej przedstawiono definicję problemu.
   )
 
   (:goal
-    (at-pkg p1 newyork)
-    (at-pkg p2 calais)
+    (and
+        (at-pkg p1 newyork)
+        (at-pkg p2 calais)
+    )
   )
 
   (:metric minimize (total-cost)) 
 )
 \end{lstlisting}
 
-\subsubsection{Stan Początkowy}
-W stanie początkowym zdefiniowano wartości dla fluentów numerycznych (koszt, czasy, prędkości, dystanse), położenie paczki i pojazdów, status paczki (delikatna) oraz połączenia między lokacjami.
+\subsubsection{Stan początkowy}
+W stanie początkowym zdefiniowano wartości dla fluentów numerycznych (koszt, czasy, prędkości, dystanse), położenie paczek i pojazdów, status paczki pierwszej jako delikatna oraz połączenia między lokacjami.
 \begin{lstlisting}[caption=Fragment stanu początkowego w problemie Zadania 1, label=lst:init_task1]
 (:init
     (= (total-cost) 0)
@@ -360,6 +360,7 @@ W stanie początkowym zdefiniowano wartości dla fluentów numerycznych (koszt, 
     (= (travel-distance london heathrow) 30)
     (at-pkg p1 london)
     (fragile p1)
+    (at-pkg p2 jfk)
     (at-vehicle my_truck london)
     (at-vehicle my_plane heathrow)
     (road-connection london heathrow) 
@@ -367,15 +368,20 @@ W stanie początkowym zdefiniowano wartości dla fluentów numerycznych (koszt, 
 )
 \end{lstlisting}
 
-\subsubsection{Cel i Metryka}
-Celem było dostarczenie paczki \texttt{p1} do Nowego Jorku, minimalizując całkowity koszt.
+\subsubsection{Cel i metryka}
+Celem było dostarczenie paczki z Londynu \texttt{p1} do Nowego Jorku i paczki \texttt{p2} z JFK do Calais, minimalizując całkowity koszt.
 \begin{lstlisting}[caption=Cel i metryka w problemie Zadania 1, label=lst:goal_task1]
-(:goal (at-pkg p1 newyork))
-(:metric minimize (total-cost))
+(:goal
+  (and
+      (at-pkg p1 newyork)
+      (at-pkg p2 calais)
+  )
+)
+(:metric minimize (total-cost)) 
 \end{lstlisting}
 
-\subsection{Wygenerowany Plan}
-Testy przeprowadzono w edytorze online \url{https://editor.planning.domains} z użyciem solvera \texttt{Temporal Fast Downward planning system}. Poniżej znajduje się fragment wygenerowanego planu dla finalnej wersji modelu (z czasem trwania i efektami warunkowymi).
+\subsection{Wygenerowany plan}
+Testy przeprowadzono w edytorze online \url{https://editor.planning.domains} z użyciem solvera \texttt{Temporal Fast Downward planning system}. Poniżej znajduje się wygenerowany plan.
 \begin{lstlisting}[caption=Fragment wygenerowanego planu dla Zadania 1, label=lst:plan_task1, basicstyle=\ttfamily\scriptsize, breaklines=true]
 0.00100000: (drive-truck another_truck newyork_port newyork) [0.16666700]
 0.00100000: (load-package p1 my_truck london) [1.00000000]
@@ -425,9 +431,8 @@ Testy przeprowadzono w edytorze online \url{https://editor.planning.domains} z u
 17.95533000: (sail-ship my_ship dover calais) [1.66667000]
 19.63200000: (unload-package p2 my_ship calais) [1.00000000]
 \end{lstlisting}
-Całkowity koszt planu dla ścieżki paczki \texttt{p1} wyniósł 174 jednostki, a czas wykonania (makespan) 11.061 jednostek czasu.
 
-\subsection{Analiza Planu i Eksperymenty}
+\subsection{Analiza planu i eksperymenty}
 \begin{itemize}
   \item \textbf{Logika planu:} Planner poprawnie wybrał trasę multimodalną (ciężarówka do lotniska, samolot, ciężarówka z lotniska) w celu dostarczenia paczki.
   \item \textbf{Koszty i czas trwania:} Wprowadzenie kosztów pozwoliło na optymalizację planu pod kątem minimalizacji wydatków. Akcje czasowe z dynamicznie obliczanym czasem trwania (na podstawie dystansu i prędkości) umożliwiły realistyczne modelowanie operacji logistycznych i obliczenie całkowitego czasu realizacji (makespan).
@@ -437,11 +442,11 @@ Całkowity koszt planu dla ścieżki paczki \texttt{p1} wyniósł 174 jednostki,
   \item \textbf{Iteracyjny rozwój i debugowanie:} Podczas implementacji napotkano różne błędy parsowania (np. \texttt{KeyError}, \texttt{AttributeError}, \texttt{AssertionError}), które wynikały z subtelnych błędów składniowych lub niekompatybilności z oczekiwaniami konkretnego parsera/planisty (np. kolejność efektów w akcji, konieczność jawnego określenia czasu dla warunków w efektach warunkowych w akcjach czasowych). Rozwiązywanie tych problemów było cennym doświadczeniem w praktycznym stosowaniu PDDL.
 \end{itemize}
 
-\section{Zadanie 2: Sprzątający Robot}
+\section{Zadanie 2: Sprzątający robot}
 \subsection{Opis Problemu}
 Zadanie polegało na stworzeniu modelu PDDL dla robota, który ma odwiedzić wszystkie zdefiniowane pokoje i posprzątać je. Robot może przemieszczać się między połączonymi pokojami i wykonywać akcję sprzątania w pokoju, w którym aktualnie się znajduje.
 
-\subsection{Definicja Domeny (\texttt{domain-task2.pddl})}
+\subsection{Definicja domeny (\texttt{domain-task2.pddl})}
 \begin{lstlisting}[language=Lisp, style=PDDLstyle]
 (define (domain cleaning-robot-world)
   (:requirements :strips :typing :negative-preconditions)
@@ -495,7 +500,7 @@ Zadanie polegało na stworzeniu modelu PDDL dla robota, który ma odwiedzić wsz
         \end{itemize}
 \end{itemize}
 
-\subsection{Definicja Problemu (\texttt{problem-task2.pddl})}
+\subsection{Definicja problemu (\texttt{problem-task2.pddl})}
 \begin{lstlisting}[language=Lisp, style=PDDLstyle]
 (define (problem clean-all-rooms-task) 
   (:domain cleaning-robot-world)
@@ -526,11 +531,11 @@ Zadanie polegało na stworzeniu modelu PDDL dla robota, który ma odwiedzić wsz
 \end{lstlisting}
 \begin{itemize}
   \item \textbf{Obiekty:} \texttt{r1 - robot}, \texttt{p1, p2, p3 - room}.
-  \item \textbf{Stan Początkowy:} Robot w \texttt{p1}, wszystkie pokoje brudne. Zdefiniowano połączenia umożliwiające robotowi dotarcie do wszystkich pokoi (np. \texttt{(connected p1 p2)}, \texttt{(connected p2 p1)}, \texttt{(connected p2 p3)}, \texttt{(connected p3 p2)}).
+  \item \textbf{Stan początkowy:} Robot w \texttt{p1}, wszystkie pokoje brudne. Zdefiniowano połączenia umożliwiające robotowi dotarcie do wszystkich pokoi (np. \texttt{(connected p1 p2)}, \texttt{(connected p2 p1)}, \texttt{(connected p2 p3)}, \texttt{(connected p3 p2)}).
   \item \textbf{Cel:} Wszystkie pokoje są czyste: \texttt{(and (is\_clean p1) (is\_clean p2) (is\_clean p3))}.
 \end{itemize}
 
-\subsection{Wygenerowany Plan}
+\subsection{Wygenerowany plan}
 Do rozwiązania użyto solvera \texttt{BFWS -- FF-parser version}. Wygenerowany plan:
 \begin{lstlisting}[caption=Wygenerowany plan dla Zadania 2, label=lst:plan_task2]
 (clean_current_room r1 p1)
@@ -543,14 +548,14 @@ Do rozwiązania użyto solvera \texttt{BFWS -- FF-parser version}. Wygenerowany 
 
 \includegraphics{2}
 
-\subsection{Analiza Planu}
+\subsection{Analiza planu}
 Planner poprawnie wygenerował sekwencję akcji, która prowadzi do posprzątania wszystkich pokoi. Kluczowe było zdefiniowanie odpowiedniej topologii połączeń między pokojami, aby umożliwić robotowi dotarcie do każdego z nich. Jeśli początkowo połączenia były zdefiniowane tylko w jedną stronę lub nie tworzyły spójnego grafu, planner nie był w stanie znaleźć rozwiązania. Plan jest sekwencyjny i logiczny.
 
 \section{Zadanie 3: Robot z dwoma ramionami przenoszący piłki}
-\subsection{Opis Problemu}
+\subsection{Opis problemu}
 Zadanie polegało na analizie dostarczonego modelu PDDL dla robota z dwoma ramionami, który ma przenieść cztery piłki z jednego pokoju do drugiego. Robot może poruszać się między pokojami oraz podnosić i odkładać piłki każdym z ramion.
 
-\subsection{Analiza Dostarczonych Plików PDDL}
+\subsection{Analiza dostarczonych plików PDDL}
 Przeanalizowano dostarczone pliki \texttt{domain-task3.pddl} i \texttt{problem-task3.pddl}.
 \begin{itemize}
   \item \textbf{Domena:} Definiuje typy (\texttt{robot, room, ball, arm}) oraz predykaty opisujące stan świata (\texttt{at}, \texttt{inroom}, \texttt{holding}, \texttt{arm-empty}). Akcje to \texttt{move}, \texttt{pick-up} i \texttt{put-down}. Model jest klasycznym przykładem problemu STRIPS.
@@ -558,29 +563,25 @@ Przeanalizowano dostarczone pliki \texttt{domain-task3.pddl} i \texttt{problem-t
 \end{itemize}
 W dostarczonym kodzie problemu poprawiono nazwę obiektu robota na \texttt{robot1} dla spójności.
 
-\subsection{Wygenerowany Plan}
-Do rozwiązania użyto solvera \texttt{BFWS -- FF-parser version}. Wygenerowany plan:
+\subsection{Wygenerowany plan}
+Do rozwiązania użyto solvera \texttt{LAMA-first: satisficing planner}. Wygenerowany plan:
 \begin{lstlisting}[caption=Wygenerowany plan dla Zadania 3, label=lst:plan_task3]
-(pick-up robot1 arm2 ball1 room1)
-(move robot1 room1 room2)
-(put-down robot1 arm2 ball1 room2)
-(move robot1 room2 room1)
+(pick-up robot1 arm1 ball1 room1)
 (pick-up robot1 arm2 ball2 room1)
 (move robot1 room1 room2)
+(put-down robot1 arm1 ball1 room2)
 (put-down robot1 arm2 ball2 room2)
 (move robot1 room2 room1)
-(pick-up robot1 arm1 ball4 room1)
+(pick-up robot1 arm1 ball3 room1)
+(pick-up robot1 arm2 ball4 room1)
 (move robot1 room1 room2)
-(put-down robot1 arm1 ball4 room2)
-(move robot1 room2 room1)
-(pick-up robot1 arm2 ball3 room1)
-(move robot1 room1 room2)
-(put-down robot1 arm2 ball3 room2)
+(put-down robot1 arm1 ball3 room2)
+(put-down robot1 arm2 ball4 room2)
 \end{lstlisting}
 
 \includegraphics{3}
 
-\subsection{Analiza Planu}
+\subsection{Analiza planu}
 \begin{itemize}
   \item \textbf{Wykorzystanie ramion:} Planner efektywnie wykorzystał oba ramiona robota, podnosząc dwie piłki przed każdym przejściem do drugiego pokoju. Skraca to liczbę koniecznych podróży między pokojami.
   \item \textbf{Optymalność:} Wygenerowany plan wydaje się optymalny pod względem liczby kroków dla domyślnych ustawień planera STRIPS, który dąży do minimalizacji liczby akcji. Robot wykonuje minimalną liczbę podróży (dwie do pokoju docelowego i jedna z powrotem).

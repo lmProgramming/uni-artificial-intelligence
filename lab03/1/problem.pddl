@@ -64,8 +64,10 @@
   )
 
   (:goal
-    (at-pkg p1 newyork)
-    (at-pkg p2 calais)
+    (and
+        (at-pkg p1 newyork)
+        (at-pkg p2 calais)
+    )
   )
 
   (:metric minimize (total-cost)) 
