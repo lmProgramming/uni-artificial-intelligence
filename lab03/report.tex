@@ -351,34 +351,9 @@ Przykładowa akcja \texttt{load-package} z efektem warunkowym oraz akcja \texttt
 
 \subsubsection{Stan początkowy}
 W stanie początkowym zdefiniowano wartości dla fluentów numerycznych (koszt, czasy, prędkości, dystanse), położenie paczek i pojazdów, status paczki pierwszej jako delikatna oraz połączenia między lokacjami.
-\begin{lstlisting}[caption=Fragment stanu początkowego w problemie Zadania 1, label=lst:init_task1]
-(:init
-    (= (total-cost) 0)
-    (= (load-unload-fixed-time) 1)
-    (= (speed my_truck) 60)
-    (= (speed my_plane) 500)
-    (= (travel-distance london heathrow) 30)
-    (at-pkg p1 london)
-    (fragile p1)
-    (at-pkg p2 jfk)
-    (at-vehicle my_truck london)
-    (at-vehicle my_plane heathrow)
-    (road-connection london heathrow) 
-    (air-connection heathrow jfk)
-)
-\end{lstlisting}
 
 \subsubsection{Cel i metryka}
 Celem było dostarczenie paczki z Londynu \texttt{p1} do Nowego Jorku i paczki \texttt{p2} z JFK do Calais, minimalizując całkowity koszt.
-\begin{lstlisting}[caption=Cel i metryka w problemie Zadania 1, label=lst:goal_task1]
-(:goal
-  (and
-      (at-pkg p1 newyork)
-      (at-pkg p2 calais)
-  )
-)
-(:metric minimize (total-cost)) 
-\end{lstlisting}
 
 \subsection{Wygenerowany plan}
 Testy przeprowadzono w edytorze online \url{https://editor.planning.domains} z użyciem solvera \texttt{Temporal Fast Downward planning system}. Poniżej znajduje się wygenerowany plan.
@@ -436,14 +411,12 @@ Testy przeprowadzono w edytorze online \url{https://editor.planning.domains} z u
 \begin{itemize}
   \item \textbf{Logika planu:} Planner poprawnie wybrał trasę multimodalną (ciężarówka do lotniska, samolot, ciężarówka z lotniska) w celu dostarczenia paczki.
   \item \textbf{Koszty i czas trwania:} Wprowadzenie kosztów pozwoliło na optymalizację planu pod kątem minimalizacji wydatków. Akcje czasowe z dynamicznie obliczanym czasem trwania (na podstawie dystansu i prędkości) umożliwiły realistyczne modelowanie operacji logistycznych i obliczenie całkowitego czasu realizacji (makespan).
-  \item \textbf{Efekty warunkowe:} Dodatkowy koszt załadunku dla paczki oznaczonej jako delikatna (\texttt{(fragile p1)}) został poprawnie naliczony, co zwiększyło całkowity koszt planu (z 144 do 174 dla ścieżki paczki \texttt{p1}) bez zmiany samej trasy, gdyż trasa lotnicza nadal była optymalna kosztowo.
-  \item \textbf{Wybór solvera:} Kluczowe okazało się użycie solvera \texttt{Temporal Fast Downward planning system}, który poprawnie obsługiwał akcje czasowe i inne zaawansowane rozszerzenia PDDL 2.1. Wcześniejsze próby z solverami nieobsługującymi akcji czasowych prowadziły do błędów parsowania.
-  \item \textbf{Zachowanie "niekrytycznych" agentów:} Zaobserwowano, że pojazd \texttt{another\_truck}, który nie był na ścieżce krytycznej transportu paczki \texttt{p1} (ale był potrzebny na końcu), wykonywał w planie serię ruchów "jałowych". Jest to cecha planowania automatycznego, gdzie planner może wypełniać czas akcjami, które nie pogarszają metryki optymalizacyjnej i nie blokują osiągnięcia celu.
-  \item \textbf{Iteracyjny rozwój i debugowanie:} Podczas implementacji napotkano różne błędy parsowania (np. \texttt{KeyError}, \texttt{AttributeError}, \texttt{AssertionError}), które wynikały z subtelnych błędów składniowych lub niekompatybilności z oczekiwaniami konkretnego parsera/planisty (np. kolejność efektów w akcji, konieczność jawnego określenia czasu dla warunków w efektach warunkowych w akcjach czasowych). Rozwiązywanie tych problemów było cennym doświadczeniem w praktycznym stosowaniu PDDL.
+  \item \textbf{Efekty warunkowe:} Dodatkowy koszt załadunku dla paczki oznaczonej jako delikatna (\texttt{(fragile p1)}) został poprawnie naliczony.
+  \item \textbf{Zachowanie "niekrytycznych" agentów:} Zaobserwowano, że pojazd \texttt{another\_truck}, który nie był na ścieżce krytycznej transportu paczki \texttt{p1} (ale był potrzebny na końcu), wykonywał w planie serię ruchów "jałowych". Jest to cecha planowania automatycznego, gdzie planner może wypełniać czas akcjami, które nie blokują osiągnięcia celu.
 \end{itemize}
 
 \section{Zadanie 2: Sprzątający robot}
-\subsection{Opis Problemu}
+\subsection{Opis problemu}
 Zadanie polegało na stworzeniu modelu PDDL dla robota, który ma odwiedzić wszystkie zdefiniowane pokoje i posprzątać je. Robot może przemieszczać się między połączonymi pokojami i wykonywać akcję sprzątania w pokoju, w którym aktualnie się znajduje.
 
 \subsection{Definicja domeny (\texttt{domain-task2.pddl})}
@@ -584,8 +557,8 @@ Do rozwiązania użyto solvera \texttt{LAMA-first: satisficing planner}. Wygener
 \subsection{Analiza planu}
 \begin{itemize}
   \item \textbf{Wykorzystanie ramion:} Planner efektywnie wykorzystał oba ramiona robota, podnosząc dwie piłki przed każdym przejściem do drugiego pokoju. Skraca to liczbę koniecznych podróży między pokojami.
-  \item \textbf{Optymalność:} Wygenerowany plan wydaje się optymalny pod względem liczby kroków dla domyślnych ustawień planera STRIPS, który dąży do minimalizacji liczby akcji. Robot wykonuje minimalną liczbę podróży (dwie do pokoju docelowego i jedna z powrotem).
-  \item \textbf{Logika:} Sekwencja akcji jest logiczna i bezpośrednio prowadzi do osiągnięcia celu. Robot najpierw zbiera maksymalną liczbę piłek, jaką może unieść (dwie), transportuje je, odkłada, a następnie wraca po kolejne.
+  \item \textbf{Optymalność:} Wygenerowany plan jest optymalny pod względem liczby kroków dla domyślnych ustawień planera STRIPS, który dąży do minimalizacji liczby akcji. Robot wykonuje minimalną liczbę podróży (dwie do pokoju docelowego i jedna z powrotem).
+  \item \textbf{Logika:} Sekwencja akcji jest logiczna i bezpośrednio prowadzi do osiągnięcia celu. Robot najpierw zbiera maksymalną liczbę piłek, jaką może unieść (dwie), transportuje je, odkłada, a następnie wraca po kolejne. Niektóre solvery nie wykorzystywały tej optymalizacji.
 \end{itemize}
 
 \section{Wnioski}
@@ -593,8 +566,8 @@ Realizacja zadań z listy nr 3 pozwoliła na praktyczne zapoznanie się z język
 \begin{itemize}
   \item \textbf{Zalety PDDL:} Język jest wysoce ekspresywny, pozwala na deklaratywne opisanie problemu, oddzielając definicję świata od strategii jego rozwiązania. Rozszerzenia PDDL (czas, koszty, efekty warunkowe) umożliwiają modelowanie złożonych, realistycznych problemów.
   \item \textbf{Wady/Wyzwania PDDL:} Składnia, mimo że logiczna, wymaga precyzji i uwagi na detale. Debugowanie może być czasochłonne, a komunikaty błędów od planerów nie zawsze są jednoznaczne. Wybór odpowiedniego planera i jego konfiguracji jest kluczowy dla skutecznego rozwiązania problemu, zwłaszcza przy użyciu zaawansowanych rozszerzeń.
-  \item \textbf{Napotkane trudności:} Główne trudności dotyczyły poprawnej składni zaawansowanych funkcji PDDL (np. efekty warunkowe w akcjach czasowych) i zapewnienia kompatybilności modelu z możliwościami wybranego solvera w edytorze online. Iteracyjne podejście do budowy modelu oraz analiza komunikatów błędów pozwoliły na przezwyciężenie tych problemów.
+  \item \textbf{Napotkane trudności:} Główne trudności dotyczyły poprawnej składni zaawansowanych funkcji PDDL (np. efekty warunkowe w akcjach czasowych) i zapewnienia kompatybilności modelu z możliwościami wybranego solvera w edytorze online. Iteracyjne podejście do budowy modelu oraz analiza komunikatów błędów pozwoliły na przezwyciężenie tych problemów. Niestety, narzędzia do PDDL nie są w pełni dojrzałe - ich komunikaty błędów są mało wyraziste.
 \end{itemize}
-Praca z PDDL była cennym doświadczeniem, rozwijającym umiejętności modelowania logicznego i abstrakcyjnego myślenia o problemach.
+Praca z PDDL była cennym doświadczeniem, rozwijającym umiejętności modelowania logicznego i abstrakcyjnego myślenia o problemach. Wydaje się, że PPDL mógłby mieć mnóstwo zastosowań (agenci w grach, automatyka i robotyka, różne optymalizacje).
 
 \end{document}
