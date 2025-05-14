@@ -2,7 +2,8 @@
   (:domain package-transport-step6)
 
   (:objects
-    p1 - package ; Our main package
+    p1 - package
+    p2 - package
 
     london paris newyork - city
     heathrow jfk charlesdegaulle - airport
@@ -37,7 +38,9 @@
     (= (travel-distance calais newyork_port) 3500) (= (travel-distance newyork_port calais) 3500)
 
     (at-pkg p1 london)
-    (fragile p1) ; Make package p1 fragile!
+    (fragile p1)
+    
+    (at-pkg p2 jfk)
 
     (at-vehicle my_truck london)
     (at-vehicle my_plane heathrow)
@@ -62,6 +65,7 @@
 
   (:goal
     (at-pkg p1 newyork)
+    (at-pkg p2 calais)
   )
 
   (:metric minimize (total-cost)) 

@@ -1,5 +1,5 @@
 (define (domain cleaning-robot-world)
-  (:requirements :strips :typing :negative-preconditions) ; Dodajmy :negative-preconditions, bo będziemy go potrzebować
+  (:requirements :strips :typing :negative-preconditions)
 
   (:types
     robot

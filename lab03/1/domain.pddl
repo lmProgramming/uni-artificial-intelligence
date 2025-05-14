@@ -1,6 +1,6 @@
 (define (domain package-transport-step6)
   (:requirements :strips :typing :negative-preconditions :action-costs 
-                 :durative-actions :conditional-effects) ; Added :conditional-effects
+                 :durative-actions :conditional-effects)
 
   (:types
     package
@@ -17,7 +17,7 @@
     (road-connection ?from - location ?to - location)
     (air-connection ?from - airport ?to - airport)
     (sea-connection ?from - port ?to - port)
-    (fragile ?p - package) ; New predicate for fragile packages
+    (fragile ?p - package)
   )
 
   (:functions
@@ -41,7 +41,7 @@
               (when (and (at start (fragile ?pkg)))  ; If fragile
                     (at end (increase (total-cost) 15))) ; Total load cost for fragile = 5 (base) + 10 (extra)
               (when (and (at start (not (fragile ?pkg)))) ; If NOT fragile (requires :negative-preconditions also for conditions in 'when')
-                    (at end (increase (total-cost) 5)))   ; Base load cost
+                    (at end (increase (total-cost) 5)))
             )
   )
 
@@ -56,7 +56,6 @@
               (at end (at-pkg ?pkg ?loc))
               (at end (not (in-pkg ?pkg ?veh)))
               (at end (increase (total-cost) 3))
-              ; Could add conditional cost for unloading fragile items too if desired
             )
   )
 
