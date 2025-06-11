@@ -1,0 +1,7 @@
+torch
+torchvision
+facenet-pytorch
+Pillow
+numpy
+deeplake
+flask
