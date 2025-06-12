@@ -173,7 +173,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-logi.txt
-wynik.txt
-
 report.html
+
+img_align_celeba/*
